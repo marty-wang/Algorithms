@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Algorithms</title>
+    <script type="text/javascript" src="js/linkedlist.js"></script>
+</head>
+<body>
+    <p id="result"></p>
+    <script type="text/javascript">
+        var p = document.getElementById("result");
+        var stack = new Alg.Stack();
+        stack.push(1);
+        console.log(stack.size());
+        stack.push(2);
+        stack.push(3);
+        console.log(stack.size());
+                
+        var iterator = stack.iterator();
+        while(iterator.hasNext()) {
+            console.log(iterator.next());
+        }
+        console.log(stack.pop());
+        console.log(stack.size());
+
+    </script>
+</body>
+</html>
