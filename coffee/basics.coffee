@@ -2,7 +2,8 @@ $ = window.Alg ?= {}
 
 class Node
 
-  constructor: (@item = null) ->
+  constructor: (item) ->
+    @item = item
     @next = null
 
 ###############################################################################
@@ -14,8 +15,6 @@ class Stack
     @_count = 0
 
   push: (item) ->
-    throw "item cannot be undefined nor null" unless item?
-
     newFirst = new Node(item)
     newFirst.next = @_first
     @_first = newFirst
@@ -49,7 +48,7 @@ class StackIterator
     @_current?
   
   next: ->
-    return null unless @_current?
+    throw "There is no next item in stack" unless @_current?
 
     oldCurrent = @_current
     @_current = @_current.next
@@ -65,8 +64,6 @@ class Queue
     @_last = null
   
   enqueue: (item) ->
-    throw "item cannot be undefined nor null" unless item?
-
     oldLast = @_last
     @_last = new Node(item)
     oldLast.next = @_last if oldLast?
@@ -104,7 +101,7 @@ class Queue
       @_current?
 
     next: ->
-      return null unless @_current?
+      throw "There is no next item in queue" unless @_current?
 
       item = @_current.item      
       @_current = @_current.next

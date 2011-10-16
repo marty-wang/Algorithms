@@ -3,7 +3,7 @@
   $ = (_ref = window.Alg) != null ? _ref : window.Alg = {};
   Node = (function() {
     function Node(item) {
-      this.item = item != null ? item : null;
+      this.item = item;
       this.next = null;
     }
     return Node;
@@ -15,9 +15,6 @@
     }
     Stack.prototype.push = function(item) {
       var newFirst;
-      if (item == null) {
-        throw "item cannot be undefined nor null";
-      }
       newFirst = new Node(item);
       newFirst.next = this._first;
       this._first = newFirst;
@@ -55,7 +52,7 @@
     StackIterator.prototype.next = function() {
       var oldCurrent;
       if (this._current == null) {
-        return null;
+        throw "There is no next item in stack";
       }
       oldCurrent = this._current;
       this._current = this._current.next;
@@ -72,9 +69,6 @@
     }
     Queue.prototype.enqueue = function(item) {
       var oldLast;
-      if (item == null) {
-        throw "item cannot be undefined nor null";
-      }
       oldLast = this._last;
       this._last = new Node(item);
       if (oldLast != null) {
@@ -118,7 +112,7 @@
       QueueIterator.prototype.next = function() {
         var item;
         if (this._current == null) {
-          return null;
+          throw "There is no next item in queue";
         }
         item = this._current.item;
         this._current = this._current.next;

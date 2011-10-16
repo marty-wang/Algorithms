@@ -1,3 +1,103 @@
+describe "Stack", ->
+
+  beforeEach ->
+    @stack = new Alg.Stack()
+
+  describe "#push", ->
+
+    it "should increase the size by 1", ->
+      oldSize = @stack.size()
+      @stack.push("foo")
+      newSize = @stack.size()
+      expect(newSize-oldSize).toEqual(1)
+
+      oldSize = @stack.size()
+      @stack.push()
+      newSize = @stack.size()
+      expect(newSize-oldSize).toEqual(1)
+
+  describe "#pop", ->
+
+    it "should throw exception when try to pop empty stack", ->
+      expect( =>
+        @stack.pop()
+      ).toThrow("stack is empty")
+
+      @stack.push "foo"
+      @stack.pop()
+
+      expect( =>
+        @stack.pop()
+      ).toThrow("stack is empty")
+      
+    it "should return the item that is added later", ->
+      @stack.push "foo"
+      @stack.push "bar"
+
+      item = @stack.pop()
+      expect(item).toEqual("bar")
+
+      item = @stack.pop()
+      expect(item).toEqual("foo")
+
+  describe "#isEmpty", ->
+
+    it "should return true if no item in stack and return false otherwiese", ->
+      expect(@stack.isEmpty()).toBeTruthy()
+
+      @stack.push "foo"
+      expect(@stack.isEmpty()).toBeFalsy()
+
+      @stack.pop()
+      expect(@stack.isEmpty()).toBeTruthy()
+
+  describe "#size", ->
+    
+    it "should update size when push and pop", ->
+      expect(@stack.size()).toEqual(0)
+
+      @stack.push "foo"
+      expect(@stack.size()).toEqual(1)
+      
+      @stack.push "bar"
+      expect(@stack.size()).toEqual(2)
+      
+      @stack.pop()
+      expect(@stack.size()).toEqual(1)
+
+
+  describe "#iterator", ->
+
+    it "should iterate from new item to old item", ->
+      iterator = @stack.iterator()
+      expect(iterator.hasNext()).toBeFalsy()
+
+      @stack.push "foo"
+      @stack.push()
+      @stack.push "bar"
+      @stack.push null
+
+      iterator = @stack.iterator()
+      expect(iterator.hasNext()).toBeTruthy()
+      expect(iterator.next()).toBeNull()
+
+      expect(iterator.hasNext()).toBeTruthy()
+      expect(iterator.next()).toEqual("bar")
+
+      expect(iterator.hasNext()).toBeTruthy()
+      expect(iterator.next()).toBeUndefined()
+
+      expect(iterator.hasNext()).toBeTruthy()
+      expect(iterator.next()).toEqual("foo")
+
+      expect(iterator.hasNext()).toBeFalsy()
+      expect(=>
+        iterator.next()
+      ).toThrow("There is no next item in stack")
+
+
+###############################################################################
+
 describe "Queue", ->
 
   beforeEach ->
@@ -12,18 +112,9 @@ describe "Queue", ->
       expect(newSize-oldSize).toEqual(1)
 
       oldSize = newSize
-      @queue.enqueue "bar"
+      @queue.enqueue()
       newSize = @queue.size()
       expect(newSize-oldSize).toEqual(1)
-
-    it "should throw exception when enqueue null or undefined item", ->
-      expect(=>
-        @queue.enqueue()        
-      ).toThrow("item cannot be undefined nor null")
-
-      expect(=>
-        @queue.enqueue(null)        
-      ).toThrow("item cannot be undefined nor null")
 
   describe "#dequeue", ->
         
@@ -72,33 +163,40 @@ describe "Queue", ->
     it "should have the same number of items as it gets enqueued", ->
       expect(@queue.size()).toEqual(0)
 
-      @queue.enqueue("foo")
+      @queue.enqueue "foo" 
       expect(@queue.size()).toEqual(1)      
 
-      @queue.enqueue("bar")
+      @queue.enqueue "bar"
       expect(@queue.size()).toEqual(2)      
 
     
   describe "#iterator", ->
 
-    it "should return false for empty queue or last item of the queue, and return true otherwise", ->
+    it "should iterate from old item to new item", ->
       iterator = @queue.iterator()
       expect(iterator.hasNext()).toBeFalsy()
       
-      @queue.enqueue("foo")
-      @queue.enqueue("bar")
+      @queue.enqueue "foo"
+      @queue.enqueue "bar"
+      @queue.enqueue null
+      @queue.enqueue()
 
       iterator = @queue.iterator()
       expect(iterator.hasNext()).toBeTruthy()
+      expect(iterator.next()).toEqual("foo")
 
-      item = iterator.next()
-      expect(item).toEqual("foo")
       expect(iterator.hasNext()).toBeTruthy()
-      
-      item = iterator.next()
-      expect(item).toEqual("bar")
+      expect(iterator.next()).toEqual("bar")
+
+      expect(iterator.hasNext()).toBeTruthy()
+      expect(iterator.next()).toBeNull()
+
+      expect(iterator.hasNext()).toBeTruthy()
+      expect(iterator.next()).toBeUndefined()
       
       expect(iterator.hasNext()).toBeFalsy()
-      expect(iterator.next()).toEqual(null)
+      expect( =>
+        iterator.next()
+      ).toThrow("There is no next item in queue")
 
 
