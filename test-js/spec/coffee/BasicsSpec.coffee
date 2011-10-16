@@ -69,7 +69,36 @@ describe "Queue", ->
   
   describe "#size", ->
     
-    it "should have 0 items when created", ->
+    it "should have the same number of items as it gets enqueued", ->
       expect(@queue.size()).toEqual(0)
+
+      @queue.enqueue("foo")
+      expect(@queue.size()).toEqual(1)      
+
+      @queue.enqueue("bar")
+      expect(@queue.size()).toEqual(2)      
+
     
+  describe "#iterator", ->
+
+    it "should return false for empty queue or last item of the queue, and return true otherwise", ->
+      iterator = @queue.iterator()
+      expect(iterator.hasNext()).toBeFalsy()
+      
+      @queue.enqueue("foo")
+      @queue.enqueue("bar")
+
+      iterator = @queue.iterator()
+      expect(iterator.hasNext()).toBeTruthy()
+
+      item = iterator.next()
+      expect(item).toEqual("foo")
+      expect(iterator.hasNext()).toBeTruthy()
+      
+      item = iterator.next()
+      expect(item).toEqual("bar")
+      
+      expect(iterator.hasNext()).toBeFalsy()
+      expect(iterator.next()).toEqual(null)
+
 

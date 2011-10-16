@@ -49,6 +49,8 @@ class StackIterator
     @_current?
   
   next: ->
+    return null unless @_current?
+
     oldCurrent = @_current
     @_current = @_current.next
     oldCurrent.item
@@ -87,6 +89,26 @@ class Queue
 
   size: ->
     @_count
+
+  iterator: ->
+    new QueueIterator(this)
+  
+  # queue iterator
+  class QueueIterator
+  
+    constructor: (queue) ->
+      @_queue = queue
+      @_current = queue._first
+
+    hasNext: ->
+      @_current?
+
+    next: ->
+      return null unless @_current?
+
+      item = @_current.item      
+      @_current = @_current.next
+      item
 
 ###############################################################################
 

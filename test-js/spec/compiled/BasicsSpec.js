@@ -63,9 +63,31 @@
         return expect(this.queue.isEmpty()).toBeTruthy();
       });
     });
-    return describe("#size", function() {
-      return it("should have 0 items when created", function() {
-        return expect(this.queue.size()).toEqual(0);
+    describe("#size", function() {
+      return it("should have the same number of items as it gets enqueued", function() {
+        expect(this.queue.size()).toEqual(0);
+        this.queue.enqueue("foo");
+        expect(this.queue.size()).toEqual(1);
+        this.queue.enqueue("bar");
+        return expect(this.queue.size()).toEqual(2);
+      });
+    });
+    return describe("#iterator", function() {
+      return it("should return false for empty queue or last item of the queue, and return true otherwise", function() {
+        var item, iterator;
+        iterator = this.queue.iterator();
+        expect(iterator.hasNext()).toBeFalsy();
+        this.queue.enqueue("foo");
+        this.queue.enqueue("bar");
+        iterator = this.queue.iterator();
+        expect(iterator.hasNext()).toBeTruthy();
+        item = iterator.next();
+        expect(item).toEqual("foo");
+        expect(iterator.hasNext()).toBeTruthy();
+        item = iterator.next();
+        expect(item).toEqual("bar");
+        expect(iterator.hasNext()).toBeFalsy();
+        return expect(iterator.next()).toEqual(null);
       });
     });
   });

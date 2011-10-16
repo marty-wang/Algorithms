@@ -54,6 +54,9 @@
     };
     StackIterator.prototype.next = function() {
       var oldCurrent;
+      if (this._current == null) {
+        return null;
+      }
       oldCurrent = this._current;
       this._current = this._current.next;
       return oldCurrent.item;
@@ -61,6 +64,7 @@
     return StackIterator;
   })();
   Queue = (function() {
+    var QueueIterator;
     function Queue() {
       this._count = 0;
       this._first = null;
@@ -100,6 +104,28 @@
     Queue.prototype.size = function() {
       return this._count;
     };
+    Queue.prototype.iterator = function() {
+      return new QueueIterator(this);
+    };
+    QueueIterator = (function() {
+      function QueueIterator(queue) {
+        this._queue = queue;
+        this._current = queue._first;
+      }
+      QueueIterator.prototype.hasNext = function() {
+        return this._current != null;
+      };
+      QueueIterator.prototype.next = function() {
+        var item;
+        if (this._current == null) {
+          return null;
+        }
+        item = this._current.item;
+        this._current = this._current.next;
+        return item;
+      };
+      return QueueIterator;
+    })();
     return Queue;
   })();
   $.Stack = Stack;
