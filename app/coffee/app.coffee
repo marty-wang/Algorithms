@@ -3,15 +3,77 @@ App ?= {}
 ###############################################################################  
 
 do (App) ->
+
+  Raphael.fn.algLabel = (x, y, width, height, text, r = 0) ->
+    return new Label this, x, y, width, height, text, r
+
+  class Label
+  
+    constructor: (paper, x, y, width, height, text, r) ->
+      @_paper = paper
+      @_x = x
+      @_y = y
+      @_width = width
+      @_height = height
+      @_text = text
+      @_r = r
+      @_attr = {
+        background: 'black'
+        stroke: 'white'
+        textColor: 'white'
+        fontFamily: "Arial"
+        fontSize: 18
+        fontWeight: 40
+      }
+
+      @_rectElm = null
+      @_textElm = null
+      @_set = null
+
+      _render.call this
+    
+    getSet: ->
+      @_set
+    
+    getText: ->
+      @_text
+        
+    _render = ->
+      unless @_set?
+        @_set = @_paper.set()
+        @_rectElm = @_paper.rect @_x, @_y, @_width, @_height, @_r
+        @_textElm = @_paper.text 0, 0, @_text
+        @_set.push @_rectElm, @_textElm
+
+      @_rectElm.attr {
+        fill: @_attr.background
+        stroke: @_attr.stroke
+      }
+
+      @_textElm.attr {
+        fill: @_attr.textColor
+        "font-family": @_attr.fontFamily
+        "font-size": @_attr.fontSize
+        "font-weight": @_attr.fontWeight
+        x: @_x + @_width/2  
+        y: @_y + @_height/2
+      }
+
+
+###############################################################################  
+
+do (App) ->
   class StackDemo
   
-    constructor: (container, width = 640, height = 480, initPosition = 400) ->
+    constructor: (container, width = 640, height = 480, initPosition = 420) ->
       @_width = width
       @_height = height
       @_data = new Alg.Stack()
       @_paper = Raphael container, width, height
       @_countText = null
       @_lastY = initPosition
+
+      @_counter = 0
 
       @_duration = 400
       @_itemInitX = 100
@@ -21,13 +83,12 @@ do (App) ->
       _setup.call this
     
     push: (item) =>
-      c = @_paper.rect @_itemInitX, @_itemInitY, 120, 30
+      item ?= @_counter
+      @_counter++
+      c = @_paper.algLabel @_itemInitX, @_itemInitY, 120, 30, item
       @_data.push c
-      c.attr({
-        fill: 'black',
-        stroke: 'white'
-      }).animate({
-        y: @_lastY
+      c.getSet().animate({
+        transform: "t0," + @_lastY
       }, @_duration, '<>')
       @_lastY -= @_stepDistance
       @_countText.attr "text", @_data.size()
@@ -35,8 +96,8 @@ do (App) ->
     pop: ->
       try
         c = @_data.pop()
-        c.animate {
-          y: @_itemInitY
+        c.getSet().animate {
+          transform: "t0," + @_itemInitY
         }, @_duration, '>'
         @_lastY += @_stepDistance
         @_countText.attr "text", @_data.size()
@@ -82,7 +143,7 @@ $ ->
   $stackAddButton = $ '#stack .add'
   $stackAddButton.click (e)->
     e.preventDefault()
-    stackDemo.push "foo"
+    stackDemo.push()
 
   $stackRemoveButton = $ '#stack .remove'
   $stackRemoveButton.click (e)->

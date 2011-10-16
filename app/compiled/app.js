@@ -4,6 +4,66 @@
     App = {};
   }
   (function(App) {
+    var Label;
+    Raphael.fn.algLabel = function(x, y, width, height, text, r) {
+      if (r == null) {
+        r = 0;
+      }
+      return new Label(this, x, y, width, height, text, r);
+    };
+    return Label = (function() {
+      var _render;
+      function Label(paper, x, y, width, height, text, r) {
+        this._paper = paper;
+        this._x = x;
+        this._y = y;
+        this._width = width;
+        this._height = height;
+        this._text = text;
+        this._r = r;
+        this._attr = {
+          background: 'black',
+          stroke: 'white',
+          textColor: 'white',
+          fontFamily: "Arial",
+          fontSize: 18,
+          fontWeight: 40
+        };
+        this._rectElm = null;
+        this._textElm = null;
+        this._set = null;
+        _render.call(this);
+      }
+      Label.prototype.getSet = function() {
+        return this._set;
+      };
+      Label.prototype.getText = function() {
+        return this._text;
+      };
+      _render = function() {
+        if (this._set == null) {
+          this._set = this._paper.set();
+          this._rectElm = this._paper.rect(this._x, this._y, this._width, this._height, this._r);
+          this._textElm = this._paper.text(0, 0, this._text);
+          this._set.push(this._rectElm, this._textElm);
+        }
+        this._rectElm.attr({
+          fill: this._attr.background,
+          stroke: this._attr.stroke
+        });
+        return this._textElm.attr({
+          fill: this._attr.textColor,
+          "font-family": this._attr.fontFamily,
+          "font-size": this._attr.fontSize,
+          "font-weight": this._attr.fontWeight,
+          x: this._x + this._width / 2,
+          y: this._y + this._height / 2
+        });
+      };
+      return Label;
+    })();
+  })(App);
+  (function(App) {
     var StackDemo;
     StackDemo = (function() {
       var _setup;
@@ -15,7 +75,7 @@
           height = 480;
         }
         if (initPosition == null) {
-          initPosition = 400;
+          initPosition = 420;
         }
         this.push = __bind(this.push, this);
         this._width = width;
@@ -24,6 +84,7 @@
         this._paper = Raphael(container, width, height);
         this._countText = null;
         this._lastY = initPosition;
+        this._counter = 0;
         this._duration = 400;
         this._itemInitX = 100;
         this._itemInitY = -32;
@@ -32,13 +93,14 @@
       }
       StackDemo.prototype.push = function(item) {
         var c;
-        c = this._paper.rect(this._itemInitX, this._itemInitY, 120, 30);
+        if (item == null) {
+          item = this._counter;
+        }
+        this._counter++;
+        c = this._paper.algLabel(this._itemInitX, this._itemInitY, 120, 30, item);
         this._data.push(c);
-        c.attr({
-          fill: 'black',
-          stroke: 'white'
-        }).animate({
-          y: this._lastY
+        c.getSet().animate({
+          transform: "t0," + this._lastY
         }, this._duration, '<>');
         this._lastY -= this._stepDistance;
         return this._countText.attr("text", this._data.size());
@@ -47,8 +109,8 @@
         var c;
         try {
           c = this._data.pop();
-          c.animate({
-            y: this._itemInitY
+          c.getSet().animate({
+            transform: "t0," + this._itemInitY
           }, this._duration, '>');
           this._lastY += this._stepDistance;
           return this._countText.attr("text", this._data.size());
@@ -95,7 +157,7 @@
     $stackAddButton = $('#stack .add');
     $stackAddButton.click(function(e) {
       e.preventDefault();
-      return stackDemo.push("foo");
+      return stackDemo.push();
     });
     $stackRemoveButton = $('#stack .remove');
     $stackRemoveButton.click(function(e) {
