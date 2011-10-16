@@ -1,5 +1,23 @@
-.demo {
+.demo-container {
+  overflow: hidden;
+  margin: 5px 0;
+}
+.part {
+  float: left;
   width: 640px;
   height: 480px;
-  margin: 10px auto;
+  /*background: blue;*/
+
+}
+.demo {
+  margin: 0 10px;
+  position: relative;
+}
+.demo .actions {
+  position: absolute;
+  left: 300px;
+  bottom: 10px;
+}
+.demo .action {
+  float: left;
 }
