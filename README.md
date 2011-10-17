@@ -8,7 +8,7 @@ The idea of the project is to use JavaScript to visualize the mechanics of the c
 
 Data Structures
 
-- Stack
+- [Stack](http://marty-wang.github.com/Algorithms/demo/basics.html#stack)
 
 # Structure
 
