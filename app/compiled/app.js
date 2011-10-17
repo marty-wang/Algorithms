@@ -66,7 +66,7 @@
   (function(App) {
     var StackDemo;
     StackDemo = (function() {
-      var _setup;
+      var _setup, _triggerError;
       function StackDemo(container, width, height, initPosition) {
         if (width == null) {
           width = 640;
@@ -85,14 +85,20 @@
         this._countText = null;
         this._lastY = initPosition;
         this._counter = 0;
+        this.LIMIT = 11;
         this._duration = 400;
         this._itemInitX = 100;
         this._itemInitY = -32;
         this._stepDistance = 34;
+        this._errorHandlers = [];
         _setup.call(this);
       }
       StackDemo.prototype.push = function(item) {
         var c;
+        if (this._data.size() > this.LIMIT - 1) {
+          _triggerError.call(this, "Stack is full");
+          return;
+        }
         if (item == null) {
           item = this._counter;
         }
@@ -102,8 +108,7 @@
         c.getSet().animate({
           transform: "t0," + this._lastY
         }, this._duration, '<>');
-        this._lastY -= this._stepDistance;
-        return this._countText.attr("text", this._data.size());
+        return this._lastY -= this._stepDistance;
       };
       StackDemo.prototype.pop = function() {
         var c;
@@ -112,26 +117,44 @@
           c.getSet().animate({
             transform: "t0," + this._itemInitY
           }, this._duration, '>');
-          this._lastY += this._stepDistance;
-          return this._countText.attr("text", this._data.size());
+          return this._lastY += this._stepDistance;
         } catch (error) {
-          return alert("" + error);
+          return _triggerError.call(this, error);
         }
       };
+      StackDemo.prototype.size = function() {
+        return this._data.size();
+      };
+      StackDemo.prototype.iterate = function() {
+        var iterator, list;
+        iterator = this._data.iterator();
+        list = "";
+        while (iterator.hasNext()) {
+          if (list !== "") {
+            list += ", ";
+          }
+          list += iterator.next().getText();
+        }
+        return list;
+      };
+      StackDemo.prototype.error = function(fn) {
+        return this._errorHandlers.push(fn);
+      };
       _setup = function() {
-        var ct;
-        this._paper.rect(0, 0, this._width, this._height, 10).attr({
+        return this._paper.rect(0, 0, this._width, this._height, 10).attr({
           fill: "gray",
           stroke: "none"
         });
-        ct = this._paper.text(420, 250, "0");
-        ct.attr({
-          fill: "white",
-          "font-family": "Arial",
-          "font-weight": 800,
-          "font-size": 200
-        });
-        return this._countText = ct;
+      };
+      _triggerError = function(error) {
+        var fn, _i, _len, _ref, _results;
+        _ref = this._errorHandlers;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          fn = _ref[_i];
+          _results.push(fn.call(this, error));
+        }
+        return _results;
       };
       return StackDemo;
     })();
@@ -152,18 +175,46 @@
     return App.QueueDemo = QueueDemo;
   })(App);
   $(function() {
-    var $stackAddButton, $stackRemoveButton, queueDemo, stackDemo;
-    stackDemo = new App.StackDemo("stack");
-    $stackAddButton = $('#stack .add');
-    $stackAddButton.click(function(e) {
-      e.preventDefault();
-      return stackDemo.push();
-    });
-    $stackRemoveButton = $('#stack .remove');
-    $stackRemoveButton.click(function(e) {
-      e.preventDefault();
-      return stackDemo.pop();
-    });
+    var queueDemo;
+    (function() {
+      var $addButton, $all, $countNumber, $error, $iterateButton, $limitNumber, $removeButton, stackDemo, updateCountNumber;
+      stackDemo = new App.StackDemo("stack");
+      stackDemo.error(function(error) {
+        $error.text("" + error);
+        return setTimeout((function() {
+          return $error.text("");
+        }), 2000);
+      });
+      $limitNumber = $('#stack .limit .number');
+      $countNumber = $('#stack .count .number');
+      $all = $('#stack .all');
+      $error = $('#stack .error');
+      $limitNumber.text(stackDemo.LIMIT);
+      $addButton = $('#stack .add');
+      $addButton.click(function(e) {
+        e.preventDefault();
+        stackDemo.push();
+        return updateCountNumber();
+      });
+      $removeButton = $('#stack .remove');
+      $removeButton.click(function(e) {
+        e.preventDefault();
+        stackDemo.pop();
+        return updateCountNumber();
+      });
+      $iterateButton = $('#stack .iterate');
+      $iterateButton.click(function(e) {
+        var list;
+        e.preventDefault();
+        list = stackDemo.iterate();
+        return $all.text(list);
+      });
+      return updateCountNumber = function() {
+        var size;
+        size = stackDemo.size();
+        return $countNumber.text(size);
+      };
+    })();
     return queueDemo = new App.QueueDemo("queue");
   });
 }).call(this);

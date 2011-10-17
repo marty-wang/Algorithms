@@ -74,15 +74,22 @@ do (App) ->
       @_lastY = initPosition
 
       @_counter = 0
+      @LIMIT = 11
 
       @_duration = 400
       @_itemInitX = 100
       @_itemInitY = -32
       @_stepDistance = 34
 
+      @_errorHandlers = []
+
       _setup.call this
     
     push: (item) =>
+      if @_data.size() > @LIMIT - 1
+        _triggerError.call this, "Stack is full"
+        return
+
       item ?= @_counter
       @_counter++
       c = @_paper.algLabel @_itemInitX, @_itemInitY, 120, 30, item
@@ -91,7 +98,6 @@ do (App) ->
         transform: "t0," + @_lastY
       }, @_duration, '<>')
       @_lastY -= @_stepDistance
-      @_countText.attr "text", @_data.size()
 
     pop: ->
       try
@@ -100,23 +106,32 @@ do (App) ->
           transform: "t0," + @_itemInitY
         }, @_duration, '>'
         @_lastY += @_stepDistance
-        @_countText.attr "text", @_data.size()
       catch error
-        alert "#{error}"
+        _triggerError.call this, error
+
+    size: ->
+      @_data.size()
+    
+    iterate: ->
+      iterator = @_data.iterator()
+      list = ""
+      while iterator.hasNext()
+        if list isnt ""
+          list += ", "
+        list += iterator.next().getText()
+      list
+
+    error: (fn) ->
+      @_errorHandlers.push fn
 
     # Private
 
     _setup = ->
       @_paper.rect(0, 0, @_width, @_height, 10).attr({fill: "gray", stroke: "none"});
-      ct = @_paper.text 420, 250, "0";
-      ct.attr {
-        fill: "white"
-        "font-family": "Arial"
-        "font-weight": 800
-        "font-size": 200
-      }
-      @_countText = ct
-
+    
+    _triggerError = (error) ->
+      for fn in @_errorHandlers
+        fn.call(this, error)
       
   App.StackDemo = StackDemo
   
@@ -138,16 +153,44 @@ do (App) ->
 ###############################################################################                  
 
 $ ->
-  stackDemo = new App.StackDemo "stack"
-  
-  $stackAddButton = $ '#stack .add'
-  $stackAddButton.click (e)->
-    e.preventDefault()
-    stackDemo.push()
 
-  $stackRemoveButton = $ '#stack .remove'
-  $stackRemoveButton.click (e)->
-    e.preventDefault()
-    stackDemo.pop()
+  do ->
+    stackDemo = new App.StackDemo "stack"
+    stackDemo.error (error)->
+      $error.text "#{error}"
+      setTimeout (->
+        $error.text ""
+      ), 2000
+
+    $limitNumber = $ '#stack .limit .number'
+    $countNumber = $ '#stack .count .number'
+    $all = $ '#stack .all'
+    $error = $ '#stack .error'
+
+    $limitNumber.text stackDemo.LIMIT
+  
+    $addButton = $ '#stack .add'
+    $addButton.click (e)->
+      e.preventDefault()
+      stackDemo.push()
+      updateCountNumber()
+
+    $removeButton = $ '#stack .remove'
+    $removeButton.click (e)->
+      e.preventDefault()
+      stackDemo.pop()
+      updateCountNumber()
+
+    $iterateButton = $ '#stack .iterate'
+    $iterateButton.click (e)->
+      e.preventDefault()
+      list = stackDemo.iterate()
+      $all.text list
+
+    updateCountNumber = ->
+      size = stackDemo.size()
+      $countNumber.text size
+
+    
 
   queueDemo = new App.QueueDemo "queue"

@@ -23,7 +23,7 @@
     Stack.prototype.pop = function() {
       var item;
       if (this.isEmpty()) {
-        throw "stack is empty";
+        throw "Stack is empty";
       }
       item = this._first.item;
       this._first = this._first.next;
@@ -82,7 +82,7 @@
     Queue.prototype.dequeue = function() {
       var item;
       if (this._count <= 0) {
-        throw "queue is empty";
+        throw "Queue is empty";
       }
       item = this._first.item;
       this._first = this._first.next;

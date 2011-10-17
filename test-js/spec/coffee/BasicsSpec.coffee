@@ -21,14 +21,14 @@ describe "Stack", ->
     it "should throw exception when try to pop empty stack", ->
       expect( =>
         @stack.pop()
-      ).toThrow("stack is empty")
+      ).toThrow("Stack is empty")
 
       @stack.push "foo"
       @stack.pop()
 
       expect( =>
         @stack.pop()
-      ).toThrow("stack is empty")
+      ).toThrow("Stack is empty")
       
     it "should return the item that is added later", ->
       @stack.push "foo"
@@ -137,7 +137,7 @@ describe "Queue", ->
     it "should throw exception when dequeue from empty queue", ->
       expect(=>
         @queue.dequeue()
-      ).toThrow("queue is empty")
+      ).toThrow("Queue is empty")
 
       @queue.enqueue "foo"
       @queue.enqueue "bar"
@@ -147,7 +147,7 @@ describe "Queue", ->
 
       expect(=>
         @queue.dequeue()
-      ).toThrow("queue is empty")      
+      ).toThrow("Queue is empty")      
 
   describe "#isEmpty", ->
 

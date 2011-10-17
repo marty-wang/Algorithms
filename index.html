@@ -12,6 +12,7 @@
 </head>
 <body>
     <div class="demo-container">
+        <h2 class="subject">Stack</h2>
         <div id="stack" class="demo part">
             <ul class="actions">
                 <li class="action">
@@ -20,11 +21,23 @@
                 <li class="action">
                     <button class="remove">Pop</button>
                 </li>
+                <li class="action">
+                    <button class="iterate">Iterate</button>
+                </li>
             </ul>
+            <div class="stats">
+                <p class="limit">Limit: <span class="number">0</span></p>
+                <p class="count">Count: <span class="number">0</span></p>
+                <div class="iteration">
+                    <p class="label">Iteration (top -> bottom):</p>
+                    <p class="all"></p>
+                </div>
+                <p class="error"></p>
+            </div>
         </div>
         <div class="text part">
             <p>In computer science, a stack is a last in, first out (LIFO) abstract data type and data structure. A stack can have any abstract data type as an element, but is characterized by only three fundamental operations: push, pop and stack top. The push operation adds a new item to the top of the stack, or initializes the stack if it is empty. If the stack is full and does not contain enough space to accept the given item, the stack is then considered to be in an overflow state. The pop operation removes an item from the top of the stack. A pop either reveals previously concealed items, or results in an empty stack, but if the stack is empty then it goes into underflow state (It means no items are present in stack to be removed). The stack top operation gets the data from the top-most position and returns it to the user without deleting it. The same underflow state can also occur in stack top operation if stack is empty.</p>
-            <a href="http://en.wikipedia.org/wiki/Stack_(abstract_data_type)">Wikipedia</a>
+            <a class="origin" href="http://en.wikipedia.org/wiki/Stack_(abstract_data_type)">Wikipedia</a>
         </div>
     </div>
     

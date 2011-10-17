@@ -21,7 +21,7 @@ class Stack
     ++@_count
 
   pop: ->
-    throw "stack is empty" if this.isEmpty()
+    throw "Stack is empty" if this.isEmpty()
 
     item = @_first.item
     @_first = @_first.next
@@ -72,7 +72,7 @@ class Queue
     ++@_count
   
   dequeue: ->
-    throw "queue is empty" if @_count <= 0
+    throw "Queue is empty" if @_count <= 0
 
     item = @_first.item
     @_first = @_first.next

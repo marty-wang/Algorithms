@@ -21,12 +21,12 @@
       it("should throw exception when try to pop empty stack", function() {
         expect(__bind(function() {
           return this.stack.pop();
-        }, this)).toThrow("stack is empty");
+        }, this)).toThrow("Stack is empty");
         this.stack.push("foo");
         this.stack.pop();
         return expect(__bind(function() {
           return this.stack.pop();
-        }, this)).toThrow("stack is empty");
+        }, this)).toThrow("Stack is empty");
       });
       return it("should return the item that is added later", function() {
         var item;
@@ -119,14 +119,14 @@
       return it("should throw exception when dequeue from empty queue", function() {
         expect(__bind(function() {
           return this.queue.dequeue();
-        }, this)).toThrow("queue is empty");
+        }, this)).toThrow("Queue is empty");
         this.queue.enqueue("foo");
         this.queue.enqueue("bar");
         this.queue.dequeue();
         this.queue.dequeue();
         return expect(__bind(function() {
           return this.queue.dequeue();
-        }, this)).toThrow("queue is empty");
+        }, this)).toThrow("Queue is empty");
       });
     });
     describe("#isEmpty", function() {
