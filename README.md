@@ -2,6 +2,8 @@
 
 The idea of the project is to use JavaScript to visualize the mechanics of the common Computer Science algorithms, so that hopefully it can help people understand some basic yet obscure theories.
 
+[Demo Homepage](http://marty-wang.github.com/Algorithms/)
+
 # Implemented Data Structure and Algorithms
 
 Data Structure
