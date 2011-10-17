@@ -1,8 +1,21 @@
 (function() {
+  var _ref;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
   if (typeof App === "undefined" || App === null) {
     App = {};
   }
+  if ((_ref = App.Util) == null) {
+    App.Util = {};
+  }
+  App.Util.throttle = function(method, context, timeout) {
+    if (timeout == null) {
+      timeout = 200;
+    }
+    clearTimeout(method.tId);
+    return method.tId = setTimeout((function() {
+      return method.call(context);
+    }), timeout);
+  };
   (function(App) {
     var Label;
     Raphael.fn.algLabel = function(x, y, width, height, text, r) {
@@ -147,11 +160,11 @@
         });
       };
       _triggerError = function(error) {
-        var fn, _i, _len, _ref, _results;
-        _ref = this._errorHandlers;
+        var fn, _i, _len, _ref2, _results;
+        _ref2 = this._errorHandlers;
         _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          fn = _ref[_i];
+        for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
+          fn = _ref2[_i];
           _results.push(fn.call(this, error));
         }
         return _results;
@@ -177,7 +190,7 @@
   $(function() {
     var queueDemo;
     (function() {
-      var $addButton, $all, $countNumber, $error, $iterateButton, $limitNumber, $removeButton, stackDemo, updateCountNumber;
+      var $addButton, $all, $countNumber, $error, $limitNumber, $removeButton, iterate, stackDemo, updateCountNumber;
       stackDemo = new App.StackDemo("stack");
       stackDemo.error(function(error) {
         $error.text("" + error);
@@ -194,25 +207,25 @@
       $addButton.click(function(e) {
         e.preventDefault();
         stackDemo.push();
-        return updateCountNumber();
+        updateCountNumber();
+        return App.Util.throttle(iterate, null, 500);
       });
       $removeButton = $('#stack .remove');
       $removeButton.click(function(e) {
         e.preventDefault();
         stackDemo.pop();
-        return updateCountNumber();
+        updateCountNumber();
+        return App.Util.throttle(iterate, null, 500);
       });
-      $iterateButton = $('#stack .iterate');
-      $iterateButton.click(function(e) {
-        var list;
-        e.preventDefault();
-        list = stackDemo.iterate();
-        return $all.text(list);
-      });
-      return updateCountNumber = function() {
+      updateCountNumber = function() {
         var size;
         size = stackDemo.size();
         return $countNumber.text(size);
+      };
+      return iterate = function() {
+        var list;
+        list = stackDemo.iterate();
+        return $all.text(list);
       };
     })();
     return queueDemo = new App.QueueDemo("queue");

@@ -1,4 +1,11 @@
 App ?= {}
+App.Util ?= {}
+
+App.Util.throttle = (method, context, timeout = 200) ->
+  clearTimeout method.tId
+  method.tId = setTimeout (->
+    method.call context
+  ), timeout
 
 ###############################################################################  
 
@@ -174,23 +181,22 @@ $ ->
       e.preventDefault()
       stackDemo.push()
       updateCountNumber()
+      App.Util.throttle iterate, null, 500
 
     $removeButton = $ '#stack .remove'
     $removeButton.click (e)->
       e.preventDefault()
       stackDemo.pop()
       updateCountNumber()
-
-    $iterateButton = $ '#stack .iterate'
-    $iterateButton.click (e)->
-      e.preventDefault()
-      list = stackDemo.iterate()
-      $all.text list
+      App.Util.throttle iterate, null, 500
 
     updateCountNumber = ->
       size = stackDemo.size()
       $countNumber.text size
-
+    
+    iterate = ->
+      list = stackDemo.iterate()
+      $all.text list
     
 
   queueDemo = new App.QueueDemo "queue"
