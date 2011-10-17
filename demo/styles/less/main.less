@@ -1,0 +1,83 @@
+.demo-container {
+    overflow: hidden;
+    margin: 5px 0;
+
+    h2 {
+        font-size: 26px;
+        font-weight: bold;
+        margin: 10px;
+    }
+}
+
+.part {
+    float: left;
+    width: 640px;
+    height: 480px;
+
+    &.text {
+        line-height: 20px;
+        padding: 5px;
+
+        .origin {
+            display: block;
+            margin: 10px 0 0 0;
+        }
+
+        &:before {
+            content: "tl;dr";
+            font-weight: bold;
+            font-size: 30px;
+            line-height: 40px;
+        }
+    }
+}
+
+.demo {
+    margin: 0 10px;
+    position: relative;
+
+    .actions {
+        position: absolute;
+        bottom: 10px;
+        text-align: center;
+        width: 100%;
+    }
+        
+    .action {
+        display: inline-block;
+    }
+
+    .stats {
+        position: absolute;
+        right: 100px;
+        top: 60px;
+        width: 240px;
+        color: white;
+        font-size: 20px;
+
+        .limit, .count {
+            font-size: 30px;
+            margin: 0 0 20px 0;
+
+            .number {
+                font-weight: bold;
+            }
+        }
+
+        .iteration {
+            .label {
+                margin: 0 0 10px 0;
+            }
+            .all {
+                line-height: 24px;
+            }
+        }
+
+        .error {
+            margin: 10px 0 0 0;
+            color: red;
+            background: black;
+            line-height: 30px;
+        }
+    }
+}
