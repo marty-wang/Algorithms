@@ -162,7 +162,7 @@ do (App) ->
 $ ->
 
   do ->
-    stackDemo = new App.StackDemo "stack"
+    stackDemo = new App.StackDemo "stack-demo"
     stackDemo.error (error)->
       $error.text "#{error}"
       setTimeout (->
@@ -199,4 +199,4 @@ $ ->
       $all.text list
     
 
-  queueDemo = new App.QueueDemo "queue"
+  queueDemo = new App.QueueDemo "queue-demo"

@@ -191,7 +191,7 @@
     var queueDemo;
     (function() {
       var $addButton, $all, $countNumber, $error, $limitNumber, $removeButton, iterate, stackDemo, updateCountNumber;
-      stackDemo = new App.StackDemo("stack");
+      stackDemo = new App.StackDemo("stack-demo");
       stackDemo.error(function(error) {
         $error.text("" + error);
         return setTimeout((function() {
@@ -228,6 +228,6 @@
         return $all.text(list);
       };
     })();
-    return queueDemo = new App.QueueDemo("queue");
+    return queueDemo = new App.QueueDemo("queue-demo");
   });
 }).call(this);
