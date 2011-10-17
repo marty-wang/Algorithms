@@ -4,9 +4,9 @@ The idea of the project is to use JavaScript to visualize the mechanics of the c
 
 [Demo Homepage](http://marty-wang.github.com/Algorithms/)
 
-# Implemented Data Structure and Algorithms
+# Implemented Data Structures and Algorithms
 
-Data Structure
+Data Structures
 
 - Stack
 
