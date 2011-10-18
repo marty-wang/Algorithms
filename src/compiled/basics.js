@@ -1,5 +1,5 @@
 (function() {
-  var $, Node, Queue, Stack, StackIterator, _ref;
+  var $, Node, Queue, QueueIterator, Stack, StackIterator, _ref;
   $ = (_ref = window.Alg) != null ? _ref : window.Alg = {};
   Node = (function() {
     function Node(item) {
@@ -61,7 +61,6 @@
     return StackIterator;
   })();
   Queue = (function() {
-    var QueueIterator;
     function Queue() {
       this._count = 0;
       this._first = null;
@@ -101,26 +100,26 @@
     Queue.prototype.iterator = function() {
       return new QueueIterator(this);
     };
-    QueueIterator = (function() {
-      function QueueIterator(queue) {
-        this._queue = queue;
-        this._current = queue._first;
-      }
-      QueueIterator.prototype.hasNext = function() {
-        return this._current != null;
-      };
-      QueueIterator.prototype.next = function() {
-        var item;
-        if (this._current == null) {
-          throw "There is no next item in queue";
-        }
-        item = this._current.item;
-        this._current = this._current.next;
-        return item;
-      };
-      return QueueIterator;
-    })();
     return Queue;
+  })();
+  QueueIterator = (function() {
+    function QueueIterator(queue) {
+      this._queue = queue;
+      this._current = queue._first;
+    }
+    QueueIterator.prototype.hasNext = function() {
+      return this._current != null;
+    };
+    QueueIterator.prototype.next = function() {
+      var item;
+      if (this._current == null) {
+        throw "There is no next item in queue";
+      }
+      item = this._current.item;
+      this._current = this._current.next;
+      return item;
+    };
+    return QueueIterator;
   })();
   $.Stack = Stack;
   $.Queue = Queue;

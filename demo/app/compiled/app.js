@@ -52,7 +52,6 @@
       Label.prototype.getText = function() {
         return this._text;
       };
-      Label.prototype.setTransform = function(transform) {};
       _render = function() {
         if (this._set == null) {
           this._set = this._paper.set();
