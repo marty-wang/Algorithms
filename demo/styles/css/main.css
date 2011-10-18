@@ -47,11 +47,11 @@
   color: white;
   font-size: 20px;
 }
-.demo .stats .limit, .demo .stats .count {
+.demo .stats .capacity, .demo .stats .count {
   font-size: 30px;
   margin: 0 0 20px 0;
 }
-.demo .stats .limit .number, .demo .stats .count .number {
+.demo .stats .capacity .number, .demo .stats .count .number {
   font-weight: bold;
 }
 .demo .stats .iteration .label {

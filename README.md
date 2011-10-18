@@ -12,6 +12,6 @@ Data Structures
 
 # Structure
 
-The **src** folder contains all the algorithm code, and the **app** folder contains the demo/visualization code. The purpose of such organization is to ensure that these algorithm code can be re-used somewhere else, while the demo/visualization code is merely for visualization.
+The **src** folder contains all the algorithm code, and the **demo** folder contains the demo/visualization code. The purpose of such organization is to ensure that these algorithm code can be re-used somewhere else, while the demo/visualization code is merely for visualization.
 
-The code is written in *CoffeeScript*, and fully tested with *Jasmine*. *Raphael* is used to help visualization.  
+The code is written in *CoffeeScript*, and the algorithm code is fully tested with *Jasmine*. *Raphael* is used to help visualization.  
