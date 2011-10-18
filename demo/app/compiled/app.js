@@ -1,6 +1,5 @@
 (function() {
   var _ref;
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
   if (typeof App === "undefined" || App === null) {
     App = {};
   }
@@ -53,6 +52,7 @@
       Label.prototype.getText = function() {
         return this._text;
       };
+      Label.prototype.setTransform = function(transform) {};
       _render = function() {
         if (this._set == null) {
           this._set = this._paper.set();
@@ -90,7 +90,6 @@
         if (initPosition == null) {
           initPosition = 420;
         }
-        this.push = __bind(this.push, this);
         this._width = width;
         this._height = height;
         this._data = new Alg.Stack();
@@ -98,7 +97,7 @@
         this._countText = null;
         this._lastY = initPosition;
         this._counter = 0;
-        this.LIMIT = 11;
+        this.CAPACITY = 11;
         this._duration = 400;
         this._itemInitX = 100;
         this._itemInitY = -32;
@@ -108,7 +107,7 @@
       }
       StackDemo.prototype.push = function(item) {
         var c;
-        if (this._data.size() > this.LIMIT - 1) {
+        if (this._data.size() > this.CAPACITY - 1) {
           _triggerError.call(this, "Stack is full");
           return;
         }
@@ -176,21 +175,111 @@
   (function(App) {
     var QueueDemo;
     QueueDemo = (function() {
-      var _init;
-      function QueueDemo(container) {
-        _init.call(this);
+      var _setup, _triggerError;
+      function QueueDemo(container, width, height, initPosition) {
+        if (width == null) {
+          width = 640;
+        }
+        if (height == null) {
+          height = 480;
+        }
+        if (initPosition == null) {
+          initPosition = 465;
+        }
+        this._width = width;
+        this._height = height;
+        this._data = new Alg.Queue();
+        this._paper = Raphael(container, width, height);
+        this._countText = null;
+        this._lastX = initPosition;
+        this._counter = 0;
+        this.CAPACITY = 11;
+        this._duration = 400;
+        this._itemInitX = 600;
+        this._itemInitY = 300;
+        this._stepDistance = 34;
+        this._errorHandlers = [];
+        _setup.call(this);
       }
-      _init = function() {
-        return console.log(this);
+      QueueDemo.prototype.enqueue = function(item) {
+        var c;
+        if (this._data.size() > this.CAPACITY - 1) {
+          _triggerError.call(this, "Queue is full");
+          return;
+        }
+        if (item == null) {
+          item = this._counter;
+        }
+        this._counter++;
+        c = this._paper.algLabel(this._itemInitX, this._itemInitY, 30, 120, item);
+        this._data.enqueue(c);
+        c._lastX = this._lastX;
+        c.getSet().animate({
+          transform: "t-" + this._lastX + ",0"
+        }, this._duration, '<>');
+        return this._lastX -= this._stepDistance;
+      };
+      QueueDemo.prototype.dequeue = function() {
+        var c, iterator, n;
+        try {
+          c = this._data.dequeue();
+          c.getSet().animate({
+            transform: "t-640,0"
+          }, this._duration, '>');
+          iterator = this._data.iterator();
+          while (iterator.hasNext()) {
+            n = iterator.next();
+            n._lastX += this._stepDistance;
+            n.getSet().animate({
+              transform: "t-" + n._lastX + ",0"
+            }, this._duration, '<>');
+          }
+          return this._lastX += this._stepDistance;
+        } catch (error) {
+          return _triggerError.call(this, error);
+        }
+      };
+      QueueDemo.prototype.size = function() {
+        return this._data.size();
+      };
+      QueueDemo.prototype.iterate = function() {
+        var iterator, list;
+        iterator = this._data.iterator();
+        list = "";
+        while (iterator.hasNext()) {
+          if (list !== "") {
+            list += ", ";
+          }
+          list += iterator.next().getText();
+        }
+        return list;
+      };
+      QueueDemo.prototype.error = function(fn) {
+        return this._errorHandlers.push(fn);
+      };
+      _setup = function() {
+        return this._paper.rect(0, 0, this._width, this._height, 10).attr({
+          fill: "gray",
+          stroke: "none"
+        });
+      };
+      _triggerError = function(error) {
+        var fn, _i, _len, _ref2, _results;
+        _ref2 = this._errorHandlers;
+        _results = [];
+        for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
+          fn = _ref2[_i];
+          _results.push(fn.call(this, error));
+        }
+        return _results;
       };
       return QueueDemo;
     })();
     return App.QueueDemo = QueueDemo;
   })(App);
   $(function() {
-    var queueDemo;
     (function() {
-      var $addButton, $all, $countNumber, $error, $limitNumber, $removeButton, iterate, stackDemo, updateCountNumber;
+      var $addButton, $all, $capacityNumber, $countNumber, $error, $removeButton, iterate, stackDemo, updateCountNumber;
       stackDemo = new App.StackDemo("stack-demo");
       stackDemo.error(function(error) {
         $error.text("" + error);
@@ -198,11 +287,11 @@
           return $error.text("");
         }), 2000);
       });
-      $limitNumber = $('#stack .limit .number');
+      $capacityNumber = $('#stack .capacity .number');
       $countNumber = $('#stack .count .number');
       $all = $('#stack .all');
       $error = $('#stack .error');
-      $limitNumber.text(stackDemo.LIMIT);
+      $capacityNumber.text(stackDemo.CAPACITY);
       $addButton = $('#stack .add');
       $addButton.click(function(e) {
         e.preventDefault();
@@ -228,6 +317,44 @@
         return $all.text(list);
       };
     })();
-    return queueDemo = new App.QueueDemo("queue-demo");
+    return (function() {
+      var $addButton, $all, $capacityNumber, $countNumber, $error, $removeButton, iterate, queueDemo, updateCountNumber;
+      queueDemo = new App.QueueDemo("queue-demo");
+      queueDemo.error(function(error) {
+        $error.text("" + error);
+        return setTimeout((function() {
+          return $error.text("");
+        }), 2000);
+      });
+      $capacityNumber = $('#queue .capacity .number');
+      $countNumber = $('#queue .count .number');
+      $all = $('#queue .all');
+      $error = $('#queue .error');
+      $capacityNumber.text(queueDemo.CAPACITY);
+      $addButton = $('#queue .add');
+      $addButton.click(function(e) {
+        e.preventDefault();
+        queueDemo.enqueue();
+        updateCountNumber();
+        return App.Util.throttle(iterate, null, 500);
+      });
+      $removeButton = $('#queue .remove');
+      $removeButton.click(function(e) {
+        e.preventDefault();
+        queueDemo.dequeue();
+        updateCountNumber();
+        return App.Util.throttle(iterate, null, 500);
+      });
+      updateCountNumber = function() {
+        var size;
+        size = queueDemo.size();
+        return $countNumber.text(size);
+      };
+      return iterate = function() {
+        var list;
+        list = queueDemo.iterate();
+        return $all.text(list);
+      };
+    })();
   });
 }).call(this);

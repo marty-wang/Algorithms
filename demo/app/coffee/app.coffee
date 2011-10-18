@@ -44,6 +44,9 @@ do (App) ->
     
     getText: ->
       @_text
+
+    setTransform: (transform) ->
+
         
     _render = ->
       unless @_set?
@@ -81,7 +84,7 @@ do (App) ->
       @_lastY = initPosition
 
       @_counter = 0
-      @LIMIT = 11
+      @CAPACITY = 11
 
       @_duration = 400
       @_itemInitX = 100
@@ -92,8 +95,8 @@ do (App) ->
 
       _setup.call this
     
-    push: (item) =>
-      if @_data.size() > @LIMIT - 1
+    push: (item) ->
+      if @_data.size() > @CAPACITY - 1
         _triggerError.call this, "Stack is full"
         return
 
@@ -134,7 +137,7 @@ do (App) ->
     # Private
 
     _setup = ->
-      @_paper.rect(0, 0, @_width, @_height, 10).attr({fill: "gray", stroke: "none"});
+      @_paper.rect(0, 0, @_width, @_height, 10).attr({fill: "gray", stroke: "none"})
     
     _triggerError = (error) ->
       for fn in @_errorHandlers
@@ -147,13 +150,83 @@ do (App) ->
 do (App) ->
   class QueueDemo
           
-    constructor: (container) ->
-      _init.call this
+    constructor: (container, width = 640, height = 480, initPosition = 465) ->
+      @_width = width
+      @_height = height
+      @_data = new Alg.Queue()
+      @_paper = Raphael container, width, height
+      @_countText = null
+      @_lastX = initPosition
 
-    # Private
+      @_counter = 0
+      @CAPACITY = 11
+
+      @_duration = 400
+      @_itemInitX = 600
+      @_itemInitY = 300
+      @_stepDistance = 34
+
+      @_errorHandlers = []
+
+      _setup.call this
     
-    _init = ->
-      console.log this    
+    enqueue: (item) ->
+      if @_data.size() > @CAPACITY - 1
+        _triggerError.call this, "Queue is full"
+        return
+
+      item ?= @_counter
+      @_counter++
+      c = @_paper.algLabel @_itemInitX, @_itemInitY, 30, 120, item
+      @_data.enqueue c
+      c._lastX = @_lastX
+      c.getSet().animate {
+        transform: "t-" + @_lastX + ",0"
+      }, @_duration, '<>'
+      @_lastX -= @_stepDistance
+
+    dequeue: ->
+      try
+        c = @_data.dequeue()
+        c.getSet().animate {
+          transform: "t-640,0"
+        }, @_duration, '>'
+
+        iterator = @_data.iterator()
+        while iterator.hasNext()
+          n = iterator.next()
+          n._lastX += @_stepDistance
+          n.getSet().animate {
+            transform: "t-" + n._lastX + ",0"
+          }, @_duration, '<>'
+
+        @_lastX += @_stepDistance
+      catch error
+        _triggerError.call this, error
+
+    size: ->
+      @_data.size()
+    
+    iterate: ->
+      iterator = @_data.iterator()
+      list = ""
+      while iterator.hasNext()
+        if list isnt ""
+          list += ", "
+        list += iterator.next().getText()
+      list
+
+    error: (fn) ->
+      @_errorHandlers.push fn
+          
+    # Private
+
+    _setup = ->
+      @_paper.rect(0, 0, @_width, @_height, 10).attr({fill: "gray", stroke: "none"})
+    
+    _triggerError = (error) ->
+      for fn in @_errorHandlers
+        fn.call(this, error) 
     
   App.QueueDemo = QueueDemo
 
@@ -169,12 +242,12 @@ $ ->
         $error.text ""
       ), 2000
 
-    $limitNumber = $ '#stack .limit .number'
+    $capacityNumber = $ '#stack .capacity .number'
     $countNumber = $ '#stack .count .number'
     $all = $ '#stack .all'
     $error = $ '#stack .error'
 
-    $limitNumber.text stackDemo.LIMIT
+    $capacityNumber.text stackDemo.CAPACITY
   
     $addButton = $ '#stack .add'
     $addButton.click (e)->
@@ -189,7 +262,7 @@ $ ->
       stackDemo.pop()
       updateCountNumber()
       App.Util.throttle iterate, null, 500
-
+    
     updateCountNumber = ->
       size = stackDemo.size()
       $countNumber.text size
@@ -197,6 +270,40 @@ $ ->
     iterate = ->
       list = stackDemo.iterate()
       $all.text list
-    
 
-  queueDemo = new App.QueueDemo "queue-demo"
+  do ->
+    queueDemo = new App.QueueDemo "queue-demo"
+    queueDemo.error (error)->
+      $error.text "#{error}"
+      setTimeout (->
+        $error.text ""
+      ), 2000
+
+    $capacityNumber = $ '#queue .capacity .number'
+    $countNumber = $ '#queue .count .number'
+    $all = $ '#queue .all'
+    $error = $ '#queue .error'
+
+    $capacityNumber.text queueDemo.CAPACITY
+
+    $addButton = $ '#queue .add'
+    $addButton.click (e) ->
+      e.preventDefault()
+      queueDemo.enqueue()
+      updateCountNumber()
+      App.Util.throttle iterate, null, 500
+
+    $removeButton = $ '#queue .remove'
+    $removeButton.click (e) ->
+      e.preventDefault()
+      queueDemo.dequeue()
+      updateCountNumber()
+      App.Util.throttle iterate, null, 500
+    
+    updateCountNumber = ->
+      size = queueDemo.size()
+      $countNumber.text size
+    
+    iterate = ->
+      list = queueDemo.iterate()
+      $all.text list

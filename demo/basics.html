@@ -24,7 +24,7 @@
                 </li>
             </ul>
             <div class="stats">
-                <p class="limit">Limit: <span class="number">0</span></p>
+                <p class="capacity">Capacity: <span class="number">0</span></p>
                 <p class="count">Count: <span class="number">0</span></p>
                 <div class="iteration">
                     <p class="label">Iteration (top -> bottom):</p>
@@ -41,8 +41,30 @@
 
     <div class="demo-container" id="queue">
         <h2 class="subject">Queue Demo</h2>
-        <div id="queue-demo" class="demo part">        
+        <div id="queue-demo" class="demo part">
+            <ul class="actions">
+                <li class="action">
+                    <button class="add">Enqueue</button>
+                </li>
+                <li class="action">
+                    <button class="remove">Dequeue</button>
+                </li>
+            </ul>
+            <div class="stats">
+                <p class="capacity">Capacity: <span class="number">0</span></p>
+                <p class="count">Count: <span class="number">0</span></p>
+                <div class="iteration">
+                    <p class="label">Iteration (beginning -> end):</p>
+                    <p class="all"></p>
+                </div>
+                <p class="error"></p>
+            </div>       
+        </div>
+        <div class="text part">
+            <p>"A queue (pronounced /ˈkjuː/ kew) is a particular kind of collection in which the entities in the collection are kept in order and the principal (or only) operations on the collection are the addition of entities to the rear terminal position and removal of entities from the front terminal position. This makes the queue a First-In-First-Out (FIFO) data structure. In a FIFO data structure, the first element added to the queue will be the first one to be removed. This is equivalent to the requirement that once an element is added, all elements that were added before have to be removed before the new element can be invoked. A queue is an example of a linear data structure."</p>
+            <a class="origin" href="http://en.wikipedia.org/wiki/Stack_(abstract_data_type)">Wikipedia</a>
         </div>
     </div>
+
 </body>
 </html>
