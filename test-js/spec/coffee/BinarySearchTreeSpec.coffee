@@ -55,5 +55,47 @@ describe "BST", ->
             expect(@bst.get(2)).toEqual("node 2")
             expect(@bst.get(3)).toEqual("node 3")
             expect(@bst.get(5)).toEqual("node 5")
+    
+    describe "#put", ->
+        it "should throw exception if key or value is null or undefined", ->
+            expect(=>
+                @bst.put()
+            ).toThrow("Key and value cannot be null or undefined")
 
+            expect(=>
+                @bst.put("somekey")
+            ).toThrow("Key and value cannot be null or undefined")
+
+            expect(=>
+                @bst.put(null, "some value")
+            ).toThrow("Key and value cannot be null or undefined")
+        
+        it "should put the item onto the tree or update the one which already exists", ->
+            @bst.put 4, "node 4"
+            @bst.put 2, "node 2"
+            @bst.put 5, "node 5"
+            @bst.put 1, "node 1"
+            @bst.put 3, "node 3"
+
+            expect(@bst.get 1).toEqual("node 1")
+            expect(@bst.get 2).toEqual("node 2")
+            expect(@bst.get 3).toEqual("node 3")
+            expect(@bst.get 4).toEqual("node 4")
+            expect(@bst.get 5).toEqual("node 5")
+
+            @bst.put 3, "node 3 updated"
+            expect(@bst.get 3).toEqual("node 3 updated")
+    
+    describe "#size", ->
+        it "should return the size of the binary search tree", ->
+            expect(@bst.size()).toEqual(0)
+
+            @bst.put 4, "node 4"
+            @bst.put 2, "node 2"
+            @bst.put 5, "node 5"
+            @bst.put 1, "node 1"
+            @bst.put 3, "node 3"
+            
+            expect(@bst.size()).toEqual(5)
+        
             

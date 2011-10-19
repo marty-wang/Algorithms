@@ -1,4 +1,5 @@
 (function() {
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
   describe("BST", function() {
     beforeEach(function() {
       this.bst = new Alg.BST();
@@ -23,7 +24,7 @@
         value: "node 5"
       };
     });
-    return describe("#get", function() {
+    describe("#get", function() {
       it("should return null if nothing found", function() {
         expect(this.bst.get("somekey")).toBeNull();
         this.bst.root = this.node4;
@@ -45,6 +46,44 @@
         expect(this.bst.get(2)).toEqual("node 2");
         expect(this.bst.get(3)).toEqual("node 3");
         return expect(this.bst.get(5)).toEqual("node 5");
+      });
+    });
+    describe("#put", function() {
+      it("should throw exception if key or value is null or undefined", function() {
+        expect(__bind(function() {
+          return this.bst.put();
+        }, this)).toThrow("Key and value cannot be null or undefined");
+        expect(__bind(function() {
+          return this.bst.put("somekey");
+        }, this)).toThrow("Key and value cannot be null or undefined");
+        return expect(__bind(function() {
+          return this.bst.put(null, "some value");
+        }, this)).toThrow("Key and value cannot be null or undefined");
+      });
+      return it("should put the item onto the tree or update the one which already exists", function() {
+        this.bst.put(4, "node 4");
+        this.bst.put(2, "node 2");
+        this.bst.put(5, "node 5");
+        this.bst.put(1, "node 1");
+        this.bst.put(3, "node 3");
+        expect(this.bst.get(1)).toEqual("node 1");
+        expect(this.bst.get(2)).toEqual("node 2");
+        expect(this.bst.get(3)).toEqual("node 3");
+        expect(this.bst.get(4)).toEqual("node 4");
+        expect(this.bst.get(5)).toEqual("node 5");
+        this.bst.put(3, "node 3 updated");
+        return expect(this.bst.get(3)).toEqual("node 3 updated");
+      });
+    });
+    return describe("#size", function() {
+      return it("should return the size of the binary search tree", function() {
+        expect(this.bst.size()).toEqual(0);
+        this.bst.put(4, "node 4");
+        this.bst.put(2, "node 2");
+        this.bst.put(5, "node 5");
+        this.bst.put(1, "node 1");
+        this.bst.put(3, "node 3");
+        return expect(this.bst.size()).toEqual(5);
       });
     });
   });
