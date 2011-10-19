@@ -2,7 +2,8 @@
 
 The idea of the project is to use JavaScript to visualize the mechanics of the common Computer Science algorithms, so that hopefully it can help people understand some basic yet obscure theories.
 
-[Demo Homepage](http://marty-wang.github.com/Algorithms/)
+- [Project Homepage](http://marty-wang.github.com/Algorithms/)
+- [Test Status](http://marty-wang.github.com/Algorithms/test-js/SpecRunner.html)
 
 # Implemented Data Structures and Algorithms
 
@@ -10,6 +11,10 @@ Data Structures
 
 - [Stack](http://marty-wang.github.com/Algorithms/demo/basics.html#stack)
 - [Queue](http://marty-wang.github.com/Algorithms/demo/basics.html#queue)
+
+Searching
+
+- Binary Search Tree
 
 # Structure
 

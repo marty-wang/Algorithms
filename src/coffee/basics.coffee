@@ -1,5 +1,7 @@
 $ = window.Alg ?= {}
 
+# Node's item can be null or undefined, 
+# because such node can be used as placeholder
 class Node
 
     constructor: (item) ->
