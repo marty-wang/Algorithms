@@ -17,9 +17,9 @@ class BST
     constructor: ->
         @root = null
         
-    put: (key, value) ->
+    put: (key, value, fn) ->
         throw "Key and value cannot be null or undefined" if (not key? or not value?)
-        @root = _put @root, key, value
+        @root = _put.call this, @root, key, value, fn
 
     # return value, or return null if nothing found    
     get: (key) ->
@@ -42,17 +42,35 @@ class BST
         else
             return node.value
     
-    _put = (node, key, value) ->
-        return new Node key, value unless node?
+    _put = (node, key, value, fn) ->
+        branch = 0
         
+        unless node?
+            newNode = new Node key, value unless node?
+            fn.call this, {
+                branch: branch
+                key: key
+                value: value
+                isNew: true
+            } if fn?
+            return newNode
+
         if node.key > key
-            node.left = _put node.left, key, value
+            branch = -1
+            node.left = _put.call this, node.left, key, value, fn
         else if node.key < key
-            node.right = _put node.right, key, value
+            branch = 1
+            node.right = _put.call this, node.right, key, value, fn
         else
             node.value = value
         
         node.n = _size(node.left) + _size(node.right) + 1
+        fn.call this, {
+            branch: branch
+            key: node.key
+            value: node.value
+            isNew: false
+        } if fn?
         node
     
     _size = (node) ->
