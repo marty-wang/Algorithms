@@ -16,7 +16,7 @@
         _setup.call(this);
       }
       BSTDemo.prototype.put = function(key, value) {
-        var branch, item, iterator, trace, traceStr;
+        var branch, item, iterator, status, trace, traceStr;
         trace = new Alg.Stack();
         this._data.put(key, value, function(obj) {
           return trace.push(obj);
@@ -36,7 +36,11 @@
             case 1:
               branch = "right";
           }
-          traceStr += (item.isNew ? "new " : "") + ("node: '" + item.key + "' " + branch);
+          status = "";
+          if (!iterator.hasNext()) {
+            status = item.isNew ? "create " : "update ";
+          }
+          traceStr += status + ("node: '" + item.key + "' " + branch);
         }
         return console.log(traceStr);
       };
@@ -76,6 +80,7 @@
     bstDemo.put(2, "node 2");
     bstDemo.put(5, "node 5");
     bstDemo.put(3, "node 3");
-    return bstDemo.put(1, "node 1");
+    bstDemo.put(1, "node 1");
+    return bstDemo.put(2, "node 22");
   });
 }).call(this);

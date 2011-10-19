@@ -28,7 +28,11 @@ do (App) ->
                     when -1 then branch = "left"
                     when 1 then branch = "right"
                 
-                traceStr += (if item.isNew then "new " else "") + "node: '#{item.key}' #{branch}"
+                status = ""
+                if !iterator.hasNext()
+                    status = if item.isNew then "create " else "update "
+                
+                traceStr += status + "node: '#{item.key}' #{branch}"
 
             console.log traceStr
 
@@ -73,4 +77,6 @@ $ ->
     bstDemo.put 5, "node 5"
     bstDemo.put 3, "node 3"
     bstDemo.put 1, "node 1"
+
+    bstDemo.put 2, "node 22"
 
