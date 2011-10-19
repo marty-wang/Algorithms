@@ -1,20 +1,4 @@
 (function() {
-  var _ref;
-  if (typeof App === "undefined" || App === null) {
-    App = {};
-  }
-  if ((_ref = App.Util) == null) {
-    App.Util = {};
-  }
-  App.Util.throttle = function(method, context, timeout) {
-    if (timeout == null) {
-      timeout = 200;
-    }
-    clearTimeout(method.tId);
-    return method.tId = setTimeout((function() {
-      return method.call(context);
-    }), timeout);
-  };
   (function(App) {
     var Label;
     Raphael.fn.algLabel = function(x, y, width, height, text, r) {
@@ -158,11 +142,11 @@
         });
       };
       _triggerError = function(error) {
-        var fn, _i, _len, _ref2, _results;
-        _ref2 = this._errorHandlers;
+        var fn, _i, _len, _ref, _results;
+        _ref = this._errorHandlers;
         _results = [];
-        for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
-          fn = _ref2[_i];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          fn = _ref[_i];
           _results.push(fn.call(this, error));
         }
         return _results;
@@ -263,11 +247,11 @@
         });
       };
       _triggerError = function(error) {
-        var fn, _i, _len, _ref2, _results;
-        _ref2 = this._errorHandlers;
+        var fn, _i, _len, _ref, _results;
+        _ref = this._errorHandlers;
         _results = [];
-        for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
-          fn = _ref2[_i];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          fn = _ref[_i];
           _results.push(fn.call(this, error));
         }
         return _results;
