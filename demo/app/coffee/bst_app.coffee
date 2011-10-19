@@ -8,6 +8,10 @@ do (App) ->
             @_paper = Raphael container, width, height
 
             _setup.call this
+        
+        put: (key, value) ->
+
+        get: (key) ->
     
     # Private
 
@@ -15,7 +19,8 @@ do (App) ->
         @_paper.rect(0, 0, @_width, @_height, 10).attr({fill: "gray", stroke: "none"})
     
     # End of BSTDemo
-    App.BSTDemo = BSTDemo      
+    
+    App.BSTDemo = BSTDemo
 
 ###############################################################################
 

@@ -21,7 +21,6 @@ class BST
         throw "Key and value cannot be null or undefined" if (not key? or not value?)
         @root = _put @root, key, value
 
-
     # return value, or return null if nothing found    
     get: (key) ->
         return null unless key?

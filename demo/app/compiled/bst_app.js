@@ -14,6 +14,8 @@
         this._paper = Raphael(container, width, height);
         _setup.call(this);
       }
+      BSTDemo.prototype.put = function(key, value) {};
+      BSTDemo.prototype.get = function(key) {};
       return BSTDemo;
     })();
     _setup = function() {
