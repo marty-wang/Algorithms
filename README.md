@@ -12,6 +12,10 @@ Data Structures
 - [Stack](http://marty-wang.github.com/Algorithms/demo/basics.html#stack)
 - [Queue](http://marty-wang.github.com/Algorithms/demo/basics.html#queue)
 
+Searching
+
+- Binary Search Tree
+
 # Structure
 
 The **src** folder contains all the algorithm code, and the **demo** folder contains the demo/visualization code. The purpose of such organization is to ensure that these algorithm code can be re-used somewhere else, while the demo/visualization code is merely for visualization.
