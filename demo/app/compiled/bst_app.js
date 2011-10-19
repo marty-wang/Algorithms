@@ -1,6 +1,6 @@
 (function() {
   (function(App) {
-    var BSTDemo, _setup;
+    var BSTDemo, _drawLeaf, _setup;
     BSTDemo = (function() {
       function BSTDemo(container, width, height) {
         if (width == null) {
@@ -16,7 +16,7 @@
         _setup.call(this);
       }
       BSTDemo.prototype.put = function(key, value) {
-        var item, iterator, trace, traceStr;
+        var branch, item, iterator, trace, traceStr;
         trace = new Alg.Stack();
         this._data.put(key, value, function(obj) {
           return trace.push(obj);
@@ -26,9 +26,17 @@
         while (iterator.hasNext()) {
           item = iterator.next();
           if (traceStr !== "") {
-            traceStr += "; ";
+            traceStr += " => ";
           }
-          traceStr += "branch " + item.branch + " value: " + item.value + " isNew: " + item.isNew;
+          branch = "";
+          switch (item.branch) {
+            case -1:
+              branch = "left";
+              break;
+            case 1:
+              branch = "right";
+          }
+          traceStr += (item.isNew ? "new " : "") + ("node: '" + item.key + "' " + branch);
         }
         return console.log(traceStr);
       };
@@ -41,6 +49,23 @@
         stroke: "none"
       });
     };
+    _drawLeaf = function(x, y, text) {
+      var label, leaf, set;
+      set = this._paper.set();
+      leaf = this._paper.circle(x, y, 20);
+      leaf.attr({
+        stroke: "white",
+        fill: "black"
+      });
+      label = this._paper.text(x, y, text);
+      label.attr({
+        fill: "white",
+        "font-size": 20,
+        "font-weight": 800
+      });
+      set.push(leaf, label);
+      return set;
+    };
     return App.BSTDemo = BSTDemo;
   })(App);
   $(function() {
@@ -51,7 +76,6 @@
     bstDemo.put(2, "node 2");
     bstDemo.put(5, "node 5");
     bstDemo.put(3, "node 3");
-    bstDemo.put(1, "node 1");
-    return bstDemo.put(1, "node 1 updated");
+    return bstDemo.put(1, "node 1");
   });
 }).call(this);
