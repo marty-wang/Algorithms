@@ -11,7 +11,7 @@
       return new Leaf(this, x, y, text, r);
     };
     return Leaf = (function() {
-      var _render;
+      var _registerEventHandler, _render;
       function Leaf(paper, x, y, text, r) {
         this._paper = paper;
         this._x = x;
@@ -21,7 +21,10 @@
         this._set = null;
         this._leaf = null;
         this._label = null;
+        this.level = 0;
+        this.payload = null;
         _render.call(this);
+        _registerEventHandler.call(this);
       }
       _render = function() {
         var label, leaf, set;
@@ -49,6 +52,13 @@
           text: this._text
         });
       };
+      _registerEventHandler = function() {
+        var self;
+        self = this;
+        return this._set.click(function() {
+          return console.log(self);
+        });
+      };
       return Leaf;
     })();
   })(App);
@@ -67,12 +77,17 @@
         this._paper = Raphael(container, width, height);
         this._data = new Alg.BST();
         this._levels = 0;
+        this._centerX = width / 2;
+        this._centerY = 100;
+        this._leafRadius = 20;
         _setup.call(this);
       }
       BSTDemo.prototype.put = function(key, value) {
-        var branch, curLevels, item, iterator, leaf, status, trace, traceStr;
+        var branch, item, iterator, leaf, level, status, trace, traceStr;
+        leaf = this._paper.algLeaf(this._centerX, this._centerY, key, this._leafRadius);
+        leaf.payload = value;
         trace = new Alg.Stack();
-        this._data.put(key, value, function(obj) {
+        this._data.put(key, leaf, function(obj) {
           return trace.push(obj);
         });
         iterator = trace.iterator();
@@ -92,18 +107,18 @@
           }
           status = "";
           if (!iterator.hasNext()) {
-            if (item.isNew) {
+            if (item.oldValue == null) {
               status = "create ";
-              curLevels = trace.size();
-              _setLevels.call(this, curLevels);
+              level = trace.size();
+              leaf.level = level;
+              _setLevels.call(this, level);
             } else {
-              "update ";
+              status = "update ";
             }
           }
           traceStr += status + ("node: '" + item.key + "' " + branch);
         }
-        console.log(traceStr);
-        return leaf = this._paper.algLeaf(100, 100, "40");
+        return console.log(traceStr);
       };
       BSTDemo.prototype.get = function(key) {};
       return BSTDemo;
@@ -116,16 +131,21 @@
     };
     _setLevels = function(newLevels) {
       if (newLevels <= this._levels) {
-        return;
+        return false;
       }
       this._levels = newLevels;
-      return _updateTree.call(this);
+      _updateTree.call(this);
+      return true;
     };
     _updateTree = function() {
-      var maxLeavesOfLastLevel;
+      var maxLeavesOfLastLevel, maxWidthOfLastLevel;
       console.log("update tree");
+      console.log("levels: " + this._levels);
       maxLeavesOfLastLevel = Math.pow(2, this._levels - 1);
-      return console.log(maxLeavesOfLastLevel);
+      maxWidthOfLastLevel = (maxWidthOfLastLevel - 1) * 2 * this._leafRadius;
+      return this._data.iterate(1, function(key, leaf) {
+        return console.log(key);
+      });
     };
     return App.BSTDemo = BSTDemo;
   })(App);
@@ -136,8 +156,6 @@
     bstDemo.put(4, "node 4");
     bstDemo.put(2, "node 2");
     bstDemo.put(5, "node 5");
-    bstDemo.put(3, "node 3");
-    bstDemo.put(1, "node 1");
-    return bstDemo.put(2, "node 22");
+    return bstDemo.put(3, "node 3");
   });
 }).call(this);

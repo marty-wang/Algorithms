@@ -16,7 +16,12 @@ do (App) ->
             @_leaf = null
             @_label = null
 
+            # property
+            @level = 0
+            @payload = null
+
             _render.call this
+            _registerEventHandler.call this
 
         # Private
 
@@ -46,7 +51,11 @@ do (App) ->
                 y: @_y
                 text: @_text
             }
-
+        
+        _registerEventHandler = ->
+            self = this
+            @_set.click ->
+                console.log self
       
 
 ###############################################################################
@@ -62,11 +71,18 @@ do (App) ->
             @_data = new Alg.BST()
             @_levels = 0
 
+            @_centerX = width / 2
+            @_centerY = 100
+            @_leafRadius = 20
+
             _setup.call this
         
         put: (key, value) ->
+            leaf = @_paper.algLeaf @_centerX, @_centerY, key, @_leafRadius
+            leaf.payload = value
+
             trace = new Alg.Stack()
-            @_data.put key, value, (obj)->
+            @_data.put key, leaf, (obj)->
                 trace.push obj
             
             iterator = trace.iterator()
@@ -83,18 +99,19 @@ do (App) ->
                     when 1 then branch = "right"
                 
                 status = ""
-                if !iterator.hasNext()
-                    if item.isNew
+                # if this is the last one
+                unless iterator.hasNext()
+                    unless item.oldValue? # add new leaf
                         status = "create "
-                        curLevels = trace.size()
-                        _setLevels.call this, curLevels
-                    else "update "
+                        level = trace.size()
+                        leaf.level = level
+                        _setLevels.call this, level
+                    else # update existing leaf
+                        status = "update "
                 
                 traceStr += status + "node: '#{item.key}' #{branch}"
 
             console.log traceStr
-
-            leaf = @_paper.algLeaf 100, 100, "40"
 
         get: (key) ->
     
@@ -103,18 +120,25 @@ do (App) ->
     _setup = ->
         @_paper.rect(0, 0, @_width, @_height, 10).attr({fill: "gray", stroke: "none"})
     
+    # return true if set, false if not
     _setLevels = (newLevels) ->
-        return if newLevels <= @_levels
+        return false if newLevels <= @_levels
 
         @_levels = newLevels
         _updateTree.call this
-
+        true
 
     _updateTree = ->
         console.log "update tree"
+        console.log "levels: #{@_levels}"
 
         maxLeavesOfLastLevel = Math.pow 2, @_levels-1
-        console.log maxLeavesOfLastLevel
+        maxWidthOfLastLevel = (maxWidthOfLastLevel - 1) * 2 * @_leafRadius
+
+        # post-order iterate the bst
+        @_data.iterate 1, (key, leaf)->
+            console.log key
+            
     
     # End of BSTDemo
     
@@ -130,7 +154,7 @@ $ ->
     bstDemo.put 2, "node 2"
     bstDemo.put 5, "node 5"
     bstDemo.put 3, "node 3"
-    bstDemo.put 1, "node 1"
+    # bstDemo.put 1, "node 1"
 
-    bstDemo.put 2, "node 22"
+    # bstDemo.put 2, "node 22"
 
