@@ -35,10 +35,10 @@
       switch (order) {
         case -1:
           return _preOrderIterate.call(this, this._root, fn);
-        case 0:
-          return _inOrderIterate.call(this, this._root, fn);
         case 1:
           return _postOrderIterate.call(this, this._root, fn);
+        default:
+          return _inOrderIterate.call(this, this._root, fn);
       }
     };
     _get = function(node, key) {
