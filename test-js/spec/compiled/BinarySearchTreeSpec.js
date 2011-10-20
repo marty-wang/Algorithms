@@ -27,7 +27,7 @@
     describe("#get", function() {
       it("should return null if nothing found", function() {
         expect(this.bst.get("somekey")).toBeNull();
-        this.bst.root = this.node4;
+        this.bst._root = this.node4;
         expect(this.bst.get()).toBeNull();
         this.node4.left = this.node2;
         this.node4.right = this.node5;
@@ -36,7 +36,7 @@
         return expect(this.bst.get(6)).toBeNull();
       });
       return it("should return the node value if found", function() {
-        this.bst.root = this.node4;
+        this.bst._root = this.node4;
         expect(this.bst.get(4)).toEqual("node 4");
         this.node4.left = this.node2;
         this.node4.right = this.node5;
@@ -75,7 +75,7 @@
         return expect(this.bst.get(3)).toEqual("node 3 updated");
       });
     });
-    return describe("#size", function() {
+    describe("#size", function() {
       return it("should return the size of the binary search tree", function() {
         expect(this.bst.size()).toEqual(0);
         this.bst.put(4, "node 4");
@@ -84,6 +84,59 @@
         this.bst.put(1, "node 1");
         this.bst.put(3, "node 3");
         return expect(this.bst.size()).toEqual(5);
+      });
+    });
+    return describe("#iterate", function() {
+      it("should iterate in-order", function() {
+        var str;
+        str = "";
+        this.bst.iterate(0, function(key, value) {
+          return str += key;
+        });
+        expect(str).toEqual("");
+        this.bst.put(4, "node 4");
+        this.bst.put(2, "node 2");
+        this.bst.put(5, "node 5");
+        this.bst.put(1, "node 1");
+        this.bst.put(3, "node 3");
+        this.bst.iterate(0, function(key, value) {
+          return str += key;
+        });
+        return expect(str).toEqual("12345");
+      });
+      it("should iterate pre-order", function() {
+        var str;
+        str = "";
+        this.bst.iterate(-1, function(key, value) {
+          return str += key;
+        });
+        expect(str).toEqual("");
+        this.bst.put(4, "node 4");
+        this.bst.put(2, "node 2");
+        this.bst.put(5, "node 5");
+        this.bst.put(1, "node 1");
+        this.bst.put(3, "node 3");
+        this.bst.iterate(-1, function(key, value) {
+          return str += key;
+        });
+        return expect(str).toEqual("42135");
+      });
+      return it("should iterate post-order", function() {
+        var str;
+        str = "";
+        this.bst.iterate(1, function(key, value) {
+          return str += key;
+        });
+        expect(str).toEqual("");
+        this.bst.put(4, "node 4");
+        this.bst.put(2, "node 2");
+        this.bst.put(5, "node 5");
+        this.bst.put(1, "node 1");
+        this.bst.put(3, "node 3");
+        this.bst.iterate(1, function(key, value) {
+          return str += key;
+        });
+        return expect(str).toEqual("13254");
       });
     });
   });

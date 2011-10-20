@@ -32,7 +32,7 @@ describe "BST", ->
         it "should return null if nothing found", ->
             expect(@bst.get "somekey").toBeNull()
 
-            @bst.root = @node4
+            @bst._root = @node4
             expect(@bst.get()).toBeNull()
 
             @node4.left = @node2
@@ -43,7 +43,7 @@ describe "BST", ->
             expect(@bst.get(6)).toBeNull()
         
         it "should return the node value if found", ->
-            @bst.root = @node4
+            @bst._root = @node4
             expect(@bst.get(4)).toEqual("node 4")
 
             @node4.left = @node2
@@ -97,5 +97,58 @@ describe "BST", ->
             @bst.put 3, "node 3"
             
             expect(@bst.size()).toEqual(5)
-        
+    
+    describe "#iterate", ->
+        it "should iterate in-order", ->
+            str = ""
+            @bst.iterate 0, (key, value)->
+                str += key
             
+            expect(str).toEqual("")
+
+            @bst.put 4, "node 4"
+            @bst.put 2, "node 2"
+            @bst.put 5, "node 5"
+            @bst.put 1, "node 1"
+            @bst.put 3, "node 3"
+            
+            @bst.iterate 0, (key, value)->
+                str += key
+            
+            expect(str).toEqual("12345")
+        
+        it "should iterate pre-order", ->            
+            str = ""
+            @bst.iterate -1, (key, value)->
+                str += key
+            
+            expect(str).toEqual("")
+
+            @bst.put 4, "node 4"
+            @bst.put 2, "node 2"
+            @bst.put 5, "node 5"
+            @bst.put 1, "node 1"
+            @bst.put 3, "node 3"
+            
+            @bst.iterate -1, (key, value)->
+                str += key
+            
+            expect(str).toEqual("42135")
+            
+        it "should iterate post-order", ->            
+            str = ""
+            @bst.iterate 1, (key, value)->
+                str += key
+            
+            expect(str).toEqual("")
+
+            @bst.put 4, "node 4"
+            @bst.put 2, "node 2"
+            @bst.put 5, "node 5"
+            @bst.put 1, "node 1"
+            @bst.put 3, "node 3"
+            
+            @bst.iterate 1, (key, value)->
+                str += key
+            
+            expect(str).toEqual("13254")            
