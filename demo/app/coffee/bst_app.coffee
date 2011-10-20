@@ -1,5 +1,58 @@
 do (App) ->
 
+    Raphael.fn.algLeaf = (x, y, text="", r=20) ->
+        return new Leaf this, x, y, text, r
+
+    class Leaf
+    
+        constructor: (paper, x, y, text, r) ->
+            @_paper = paper
+            @_x = x
+            @_y = y
+            @_text = text
+            @_radius = r
+
+            @_set = null
+            @_leaf = null
+            @_label = null
+
+            _render.call this
+
+        # Private
+
+        _render = ->
+            unless @_set?
+                set = @_paper.set()
+                leaf = @_paper.circle @_x, @_y, @_radius
+                label = @_paper.text @_x, @_y, @_text
+                set.push leaf, label
+
+                @_leaf = leaf
+                @_label = label
+                @_set = set
+
+            @_leaf.attr {
+                stroke: "white"
+                fill: "black"
+                x: @_x
+                y: @_y
+            }
+
+            @_label.attr {
+                fill: "white"
+                "font-size": 20
+                "font-weight": 800
+                x: @_x
+                y: @_y
+                text: @_text
+            }
+
+      
+
+###############################################################################
+
+do (App) ->
+
     class BSTDemo
     
         constructor: (container, width = 640, height = 480) ->
@@ -7,6 +60,7 @@ do (App) ->
             @_height = height
             @_paper = Raphael container, width, height
             @_data = new Alg.BST()
+            @_levels = 0
 
             _setup.call this
         
@@ -30,11 +84,17 @@ do (App) ->
                 
                 status = ""
                 if !iterator.hasNext()
-                    status = if item.isNew then "create " else "update "
+                    if item.isNew
+                        status = "create "
+                        curLevels = trace.size()
+                        _setLevels.call this, curLevels
+                    else "update "
                 
                 traceStr += status + "node: '#{item.key}' #{branch}"
 
             console.log traceStr
+
+            leaf = @_paper.algLeaf 100, 100, "40"
 
         get: (key) ->
     
@@ -42,25 +102,19 @@ do (App) ->
 
     _setup = ->
         @_paper.rect(0, 0, @_width, @_height, 10).attr({fill: "gray", stroke: "none"})
+    
+    _setLevels = (newLevels) ->
+        return if newLevels <= @_levels
 
-    _drawLeaf = (x, y, text)->
-        set = @_paper.set()
+        @_levels = newLevels
+        _updateTree.call this
 
-        leaf = @_paper.circle x, y, 20
-        leaf.attr {
-            stroke: "white"
-            fill: "black"
-        }
 
-        label = @_paper.text x, y, text
-        label.attr {
-            fill: "white"
-            "font-size": 20
-            "font-weight": 800
-        }
+    _updateTree = ->
+        console.log "update tree"
 
-        set.push leaf, label
-        set
+        maxLeavesOfLastLevel = Math.pow 2, @_levels-1
+        console.log maxLeavesOfLastLevel
     
     # End of BSTDemo
     

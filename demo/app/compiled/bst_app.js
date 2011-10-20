@@ -1,6 +1,59 @@
 (function() {
   (function(App) {
-    var BSTDemo, _drawLeaf, _setup;
+    var Leaf;
+    Raphael.fn.algLeaf = function(x, y, text, r) {
+      if (text == null) {
+        text = "";
+      }
+      if (r == null) {
+        r = 20;
+      }
+      return new Leaf(this, x, y, text, r);
+    };
+    return Leaf = (function() {
+      var _render;
+      function Leaf(paper, x, y, text, r) {
+        this._paper = paper;
+        this._x = x;
+        this._y = y;
+        this._text = text;
+        this._radius = r;
+        this._set = null;
+        this._leaf = null;
+        this._label = null;
+        _render.call(this);
+      }
+      _render = function() {
+        var label, leaf, set;
+        if (this._set == null) {
+          set = this._paper.set();
+          leaf = this._paper.circle(this._x, this._y, this._radius);
+          label = this._paper.text(this._x, this._y, this._text);
+          set.push(leaf, label);
+          this._leaf = leaf;
+          this._label = label;
+          this._set = set;
+        }
+        this._leaf.attr({
+          stroke: "white",
+          fill: "black",
+          x: this._x,
+          y: this._y
+        });
+        return this._label.attr({
+          fill: "white",
+          "font-size": 20,
+          "font-weight": 800,
+          x: this._x,
+          y: this._y,
+          text: this._text
+        });
+      };
+      return Leaf;
+    })();
+  })(App);
+  (function(App) {
+    var BSTDemo, _setLevels, _setup, _updateTree;
     BSTDemo = (function() {
       function BSTDemo(container, width, height) {
         if (width == null) {
@@ -13,10 +66,11 @@
         this._height = height;
         this._paper = Raphael(container, width, height);
         this._data = new Alg.BST();
+        this._levels = 0;
         _setup.call(this);
       }
       BSTDemo.prototype.put = function(key, value) {
-        var branch, item, iterator, status, trace, traceStr;
+        var branch, curLevels, item, iterator, leaf, status, trace, traceStr;
         trace = new Alg.Stack();
         this._data.put(key, value, function(obj) {
           return trace.push(obj);
@@ -38,11 +92,18 @@
           }
           status = "";
           if (!iterator.hasNext()) {
-            status = item.isNew ? "create " : "update ";
+            if (item.isNew) {
+              status = "create ";
+              curLevels = trace.size();
+              _setLevels.call(this, curLevels);
+            } else {
+              "update ";
+            }
           }
           traceStr += status + ("node: '" + item.key + "' " + branch);
         }
-        return console.log(traceStr);
+        console.log(traceStr);
+        return leaf = this._paper.algLeaf(100, 100, "40");
       };
       BSTDemo.prototype.get = function(key) {};
       return BSTDemo;
@@ -53,22 +114,18 @@
         stroke: "none"
       });
     };
-    _drawLeaf = function(x, y, text) {
-      var label, leaf, set;
-      set = this._paper.set();
-      leaf = this._paper.circle(x, y, 20);
-      leaf.attr({
-        stroke: "white",
-        fill: "black"
-      });
-      label = this._paper.text(x, y, text);
-      label.attr({
-        fill: "white",
-        "font-size": 20,
-        "font-weight": 800
-      });
-      set.push(leaf, label);
-      return set;
+    _setLevels = function(newLevels) {
+      if (newLevels <= this._levels) {
+        return;
+      }
+      this._levels = newLevels;
+      return _updateTree.call(this);
+    };
+    _updateTree = function() {
+      var maxLeavesOfLastLevel;
+      console.log("update tree");
+      maxLeavesOfLastLevel = Math.pow(2, this._levels - 1);
+      return console.log(maxLeavesOfLastLevel);
     };
     return App.BSTDemo = BSTDemo;
   })(App);
