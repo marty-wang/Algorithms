@@ -20,7 +20,7 @@ do (App) ->
 
             # property
             @level = 0
-            @payload = null
+            @_payload = null
             @key = null # TODO: key probably should be set in constructor and should not be writtable
 
             _render.call this
@@ -29,7 +29,15 @@ do (App) ->
         getPosition: ->
             [@_x, @_y]
 
+        setPayload: (payload)->
+            @_payload = payload
+            @_set.attr {
+                title: payload
+            }
 
+        getPayload: ->
+            @_payload
+        
         move: (x, y, animate = false) ->
             @_x = x
             @_y = y
@@ -39,13 +47,19 @@ do (App) ->
                 cy: y
                 x: x
                 y: y
-                path: "M#{@_x} #{@_y}L#{@_x} #{@_y+400}"
             }
 
             if animate
-                @_set.animate props, 500
+                animDuraiton = 500
+                @_set.animate props, animDuraiton
+                @_centerLine.animate {
+                    path: "M#{@_x} #{@_y}L#{@_x} #{@_y+400}"
+                }, animDuraiton
             else
                 @_set.attr props
+                @_centerLine.attr {
+                    path: "M#{@_x} #{@_y}L#{@_x} #{@_y+400}"
+                }
 
         connect: (leaf) ->
             myCx = @_x
@@ -59,8 +73,25 @@ do (App) ->
                 path: "M#{myCx} #{myCy}L#{cx1} #{cy1}"
             }
             @_branch.toBack()
+        
+        remove: (animate = false, fn) ->
+            self = this
+            if animate
+                @_set.animate {
+                    transform: 's0'
+                    opacity: 0
+                }, 250, '<>', ->
+                    _remove.call self
+                    fn.call self if fn?
+            else
+                _remove.call this
 
         # Private
+
+        _remove = ->
+            @_set.remove()
+            @_centerLine.remove()
+            @_branch.remove()
 
         _render = ->
             unless @_set?
@@ -69,19 +100,20 @@ do (App) ->
                 branch = @_paper.path()
                 leaf = @_paper.circle @_x, @_y, @_radius
                 label = @_paper.text @_x, @_y, @_text
-                set.push leaf, label, centerLine
+                set.push leaf, label
 
                 @_leaf = leaf
                 @_label = label
-                @_centerLine = centerLine
                 @_set = set
 
+                @_centerLine = centerLine
                 @_branch = branch
                 
 
             @_leaf.attr {
                 stroke: "white"
                 fill: "black"
+                opacity: 0.4
             }
 
             @_label.attr {
@@ -108,7 +140,7 @@ do (App) ->
         _registerEventHandler = ->
             self = this
             @_set.click ->
-                console.log self
+                alert self._payload
       
 
 ###############################################################################
@@ -129,12 +161,10 @@ do (App) ->
             @_leafRadius = 20
             @_minLeafDistance = 60 # from leaf center to leaf center
             @_verticalLevelDistance = 80
-
-            _setup.call this
         
         put: (key, value) ->
             leaf = @_paper.algLeaf @_centerX, @_centerY, key, @_leafRadius
-            leaf.payload = value
+            leaf.setPayload value
             leaf.key = key
 
             trace = new Alg.Stack()
@@ -143,6 +173,7 @@ do (App) ->
 
             iterator = trace.iterator()
             traceStr = ""
+            previousItem = null
             while iterator.hasNext()
                 item = iterator.next()
 
@@ -165,7 +196,17 @@ do (App) ->
                         _setLevels.call this, level
                     else # updated existing leaf
                         status = "update "
-                
+                        oldLeaf = item.oldValue
+                        oldPos = oldLeaf.getPosition()
+                        oldLevel = oldLeaf.level
+                        oldLeaf.remove(true)
+                        newLeaf = item.value
+                        newLeaf.level = oldLevel
+                        newLeaf.move oldPos[0], oldPos[1]
+                        newLeaf.connect previousItem.value if previousItem?
+
+                previousItem = item
+
                 traceStr += status + "node: '#{item.key}' #{branch}"
 
             #console.log traceStr
@@ -173,12 +214,6 @@ do (App) ->
         get: (key) ->
     
     # Private
-
-    _setup = ->
-        # @_paper.rect(0, 0, @_width, @_height, 10).attr {
-        #     fill: "gray"
-        #     stroke: "none"
-        # }
     
     _setLevels = (newLevels) ->
         @_levels = newLevels
@@ -196,6 +231,7 @@ do (App) ->
         stack = new Alg.Stack()
         # pre-order iterate the bst
         @_data.iterate -1, (key, leaf)->
+            #console.log "key #{key} value #{leaf.getPayload()}"
             try
                 level = leaf.level
                 h = hOffsets[level]
@@ -287,5 +323,7 @@ $ ->
         e.preventDefault()
         key = $key_select.val()
         value = $value_input.val()
+        $value_input.val("")
         value = "Leaf #{key}" if value is ""
         bstDemo.put key, value
+        
