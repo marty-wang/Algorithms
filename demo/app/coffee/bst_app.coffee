@@ -15,6 +15,7 @@ do (App) ->
             @_set = null
             @_leaf = null
             @_label = null
+            @_centerLine = null
 
             # property
             @level = 0
@@ -37,6 +38,7 @@ do (App) ->
                 cy: y
                 x: x
                 y: y
+                path: "M#{@_x} #{@_y}L#{@_x} #{@_y+400}"
             }
 
             if animate
@@ -52,10 +54,12 @@ do (App) ->
                 set = @_paper.set()
                 leaf = @_paper.circle @_x, @_y, @_radius
                 label = @_paper.text @_x, @_y, @_text
-                set.push leaf, label
+                centerLine = @_paper.path()
+                set.push leaf, label, centerLine
 
                 @_leaf = leaf
                 @_label = label
+                @_centerLine = centerLine
                 @_set = set
 
             @_leaf.attr {
@@ -65,9 +69,16 @@ do (App) ->
 
             @_label.attr {
                 fill: "white"
-                "font-size": 20
+                "font-size": 12
                 "font-weight": 800
                 text: @_text
+            }
+
+            @_centerLine.attr {
+                stroke: "white"
+                "stroke-width": 2
+                "stroke-dasharray": "-"
+                "stroke-opacity": 0.5
             }
 
             this.move @_x, @_y
@@ -93,7 +104,9 @@ do (App) ->
 
             @_centerX = width / 2
             @_centerY = 100
-            @_leafRadius = 20
+            @_leafRadius = 10
+            @_minLeafDistance = 40 # from leaf center to leaf center
+            @_verticalLevelDistance = 40
 
             _setup.call this
         
@@ -126,7 +139,8 @@ do (App) ->
                         status = "create "
                         level = trace.size()
                         leaf.level = level - 1
-                        _setLevels.call this, level #if level > @_levels
+                        level = Math.max level, @_levels
+                        _setLevels.call this, level
                     else # updated existing leaf
                         status = "update "
                 
@@ -143,34 +157,31 @@ do (App) ->
             fill: "gray"
             stroke: "none"
         }
-        @_paper.path("M#{@_centerX} #{@_centerY}L#{@_centerX} #{@_centerY+400}").attr {
-            stroke: "white"
-            "stroke-width": 2
-            "stroke-dasharray": "-"
-            "stroke-opacity": 0.5
-        }
+        # @_paper.path("M#{@_centerX} #{@_centerY}L#{@_centerX} #{@_centerY+400}").attr {
+        #     stroke: "white"
+        #     "stroke-width": 2
+        #     "stroke-dasharray": "-"
+        #     "stroke-opacity": 0.5
+        # }
     
     _setLevels = (newLevels) ->
         @_levels = newLevels
         _updateTree.call this
 
     _updateTree = ->
-        #console.log "update tree"
-        console.log "===levels: #{@_levels}"
+        # console.log "=== update tree levels: #{@_levels}"
 
         maxLeavesOfLastLevel = Math.pow 2, @_levels-1
         maxWidthOfLastLevel = (maxWidthOfLastLevel - 1) * 2 * @_leafRadius
 
         hOffsets = _calcHOffsetToFatherLeaf.call this, @_levels
+        v = @_verticalLevelDistance
 
         stack = new Alg.Stack()
         # pre-order iterate the bst
         @_data.iterate -1, (key, leaf)->
-            # console.log key
             try
-                v = 60
                 level = leaf.level
-                # console.log "level: #{level}"
                 h = hOffsets[level]
                 item1 = stack.pop()
                 while item1.level > level
@@ -206,7 +217,7 @@ do (App) ->
             offsets.unshift 0
         else
             maxLeavesOfLastLevel = Math.pow 2, numOfLevels-1
-            previousLeafDistance = 60 # from leaf center to leaf center
+            previousLeafDistance = @_minLeafDistance
             widthOfPreviousLevel = (maxLeavesOfLastLevel - 1) * previousLeafDistance
             
             for level in [numOfLevels..1]
@@ -236,9 +247,12 @@ $ ->
     bstDemo.put 2, "node 2"
     bstDemo.put 5, "node 5"
     bstDemo.put 6, "node 6"
-    bstDemo.put 3, "node 3"
+    
     bstDemo.put 1, "node 1"
+    bstDemo.put 3, "node 3"
     bstDemo.put 0.5, "node 0.5"
+    bstDemo.put 0.25, "node 0.25"
+    bstDemo.put 0.75, "node 0.75"
     bstDemo.put 1.5, "node 1.5"
 
     # bstDemo.put 2, "node 22"

@@ -21,6 +21,7 @@
         this._set = null;
         this._leaf = null;
         this._label = null;
+        this._centerLine = null;
         this.level = 0;
         this.payload = null;
         this.key = null;
@@ -41,7 +42,8 @@
           cx: x,
           cy: y,
           x: x,
-          y: y
+          y: y,
+          path: "M" + this._x + " " + this._y + "L" + this._x + " " + (this._y + 400)
         };
         if (animate) {
           return this._set.animate(props, 500);
@@ -50,14 +52,16 @@
         }
       };
       _render = function() {
-        var label, leaf, set;
+        var centerLine, label, leaf, set;
         if (this._set == null) {
           set = this._paper.set();
           leaf = this._paper.circle(this._x, this._y, this._radius);
           label = this._paper.text(this._x, this._y, this._text);
-          set.push(leaf, label);
+          centerLine = this._paper.path();
+          set.push(leaf, label, centerLine);
           this._leaf = leaf;
           this._label = label;
+          this._centerLine = centerLine;
           this._set = set;
         }
         this._leaf.attr({
@@ -66,9 +70,15 @@
         });
         this._label.attr({
           fill: "white",
-          "font-size": 20,
+          "font-size": 12,
           "font-weight": 800,
           text: this._text
+        });
+        this._centerLine.attr({
+          stroke: "white",
+          "stroke-width": 2,
+          "stroke-dasharray": "-",
+          "stroke-opacity": 0.5
         });
         return this.move(this._x, this._y);
       };
@@ -99,7 +109,9 @@
         this._levels = 0;
         this._centerX = width / 2;
         this._centerY = 100;
-        this._leafRadius = 20;
+        this._leafRadius = 10;
+        this._minLeafDistance = 40;
+        this._verticalLevelDistance = 40;
         _setup.call(this);
       }
       BSTDemo.prototype.put = function(key, value) {
@@ -133,6 +145,7 @@
               status = "create ";
               level = trace.size();
               leaf.level = level - 1;
+              level = Math.max(level, this._levels);
               _setLevels.call(this, level);
             } else {
               status = "update ";
@@ -146,15 +159,9 @@
       return BSTDemo;
     })();
     _setup = function() {
-      this._paper.rect(0, 0, this._width, this._height, 10).attr({
+      return this._paper.rect(0, 0, this._width, this._height, 10).attr({
         fill: "gray",
         stroke: "none"
-      });
-      return this._paper.path("M" + this._centerX + " " + this._centerY + "L" + this._centerX + " " + (this._centerY + 400)).attr({
-        stroke: "white",
-        "stroke-width": 2,
-        "stroke-dasharray": "-",
-        "stroke-opacity": 0.5
       });
     };
     _setLevels = function(newLevels) {
@@ -162,16 +169,15 @@
       return _updateTree.call(this);
     };
     _updateTree = function() {
-      var hOffsets, maxLeavesOfLastLevel, maxWidthOfLastLevel, stack;
-      console.log("===levels: " + this._levels);
+      var hOffsets, maxLeavesOfLastLevel, maxWidthOfLastLevel, stack, v;
       maxLeavesOfLastLevel = Math.pow(2, this._levels - 1);
       maxWidthOfLastLevel = (maxWidthOfLastLevel - 1) * 2 * this._leafRadius;
       hOffsets = _calcHOffsetToFatherLeaf.call(this, this._levels);
+      v = this._verticalLevelDistance;
       stack = new Alg.Stack();
       return this._data.iterate(-1, function(key, leaf) {
-        var h, item1, item2, level, pos, v;
+        var h, item1, item2, level, pos;
         try {
-          v = 60;
           level = leaf.level;
           h = hOffsets[level];
           item1 = stack.pop();
@@ -208,7 +214,7 @@
         offsets.unshift(0);
       } else {
         maxLeavesOfLastLevel = Math.pow(2, numOfLevels - 1);
-        previousLeafDistance = 60;
+        previousLeafDistance = this._minLeafDistance;
         widthOfPreviousLevel = (maxLeavesOfLastLevel - 1) * previousLeafDistance;
         for (level = numOfLevels; numOfLevels <= 1 ? level <= 1 : level >= 1; numOfLevels <= 1 ? level++ : level--) {
           if (level === numOfLevels) {
@@ -235,9 +241,11 @@
     bstDemo.put(2, "node 2");
     bstDemo.put(5, "node 5");
     bstDemo.put(6, "node 6");
-    bstDemo.put(3, "node 3");
     bstDemo.put(1, "node 1");
+    bstDemo.put(3, "node 3");
     bstDemo.put(0.5, "node 0.5");
+    bstDemo.put(0.25, "node 0.25");
+    bstDemo.put(0.75, "node 0.75");
     return bstDemo.put(1.5, "node 1.5");
   });
 }).call(this);
