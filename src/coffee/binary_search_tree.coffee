@@ -34,10 +34,10 @@ class BST
         switch order
             # pre-order
             when -1 then _preOrderIterate.call this, @_root, fn
-            # in-order
-            when 0 then _inOrderIterate.call this, @_root, fn
             # post-order
             when 1 then _postOrderIterate.call this, @_root, fn
+            # in-order
+            else _inOrderIterate.call this, @_root, fn
 
     # private
 

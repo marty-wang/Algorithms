@@ -18,23 +18,35 @@
     <div class="demo-container" id="bst">
         <h2 class="subject">Binary Search Tree Demo</h2>
         <div id="bst-demo" class="demo part">
-            <!-- <ul class="actions">
-                <li class="action">
-                    <button class="add">Push</button>
+            <ul class="input_panel">
+                <li class="item">
+                    <span class="label">Key:</span>
                 </li>
-                <li class="action">
-                    <button class="remove">Pop</button>
+                <li class="item">
+                    <select id="key_select">
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                    </select>
+                </li>
+                <li class="item">
+                    <span class="label">Value:</span>
+                </li>
+                <li class="item">
+                    <input id="value_input" type="text" size="50">
+                </li>
+                <li class="item">
+                    <input id="add_button" type="button" value="Add">
                 </li>
             </ul>
-            <div class="stats">
-                <p class="capacity">Capacity: <span class="number">0</span></p>
-                <p class="count">Count: <span class="number">0</span></p>
-                <div class="iteration">
-                    <p class="label">Iteration (top -> bottom):</p>
-                    <p class="all"></p>
-                </div>
-                <p class="error"></p>
-            </div> -->
+            <p class="log"></p>
         </div>
         <div class="text part">
             <p>"In computer science, a binary search tree (BST), which may sometimes also be called an ordered or sorted binary tree, is a node-based binary tree data structure which has the following properties: [1] The left subtree of a node contains only nodes with keys less than the node's key. [2] The right subtree of a node contains only nodes with keys greater than the node's key. [3] Both the left and right subtrees must also be binary search trees."</p>

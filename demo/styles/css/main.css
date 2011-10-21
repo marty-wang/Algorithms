@@ -66,3 +66,29 @@
   background: black;
   line-height: 30px;
 }
+#bst .part {
+  width: 1024px;
+}
+#bst .demo.part {
+  height: 540px;
+  background: gray;
+}
+#bst .input_panel {
+  margin: 20px 0 0 0;
+  width: 100%;
+  text-align: center;
+}
+#bst .input_panel .item {
+  display: inline-block;
+}
+#bst .log {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 20px;
+  font-weight: bold;
+  color: red;
+  background: black;
+  padding: 4px;
+  margin: 10px;
+}

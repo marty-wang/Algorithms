@@ -14,7 +14,7 @@ Data Structures
 
 Searching
 
-- Binary Search Tree
+- [Binary Search Tree (WIP)](http://marty-wang.github.com/Algorithms/demo/binary_search_tree.html)
 
 # Structure
 
