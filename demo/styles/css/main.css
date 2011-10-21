@@ -81,3 +81,14 @@
 #bst .input_panel .item {
   display: inline-block;
 }
+#bst .log {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 20px;
+  font-weight: bold;
+  color: red;
+  background: black;
+  padding: 4px;
+  margin: 10px;
+}

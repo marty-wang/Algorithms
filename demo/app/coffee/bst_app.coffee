@@ -178,6 +178,8 @@ do (App) ->
             @_leafRadius = 20
             @_minLeafDistance = 60 # from leaf center to leaf center
             @_verticalLevelDistance = 80
+
+            @_logHandlers = []
         
         put: (key, value) ->
             leaf = @_paper.algLeaf @_centerX, @_centerY, key, @_leafRadius
@@ -212,9 +214,11 @@ do (App) ->
                         level = Math.max level, @_levels
                         _setLevels.call this, level
                         leaf.show true
+                        _triggerLog.call this, "created new leaf, key: #{leaf.key}, value: #{leaf.getPayload()}"
                     else # updated existing leaf
                         status = "update "
                         oldLeaf = item.oldValue
+                        oldPayload = oldLeaf.getPayload()
                         oldPos = oldLeaf.getPosition()
                         oldLevel = oldLeaf.level
                         oldLeaf.remove()                      
@@ -224,6 +228,7 @@ do (App) ->
                         newLeaf.move oldPos[0], oldPos[1]
                         newLeaf.connect previousItem.value if previousItem?
                         newLeaf.show true
+                        _triggerLog.call this, "updated leaf, key: #{newLeaf.key}, new value: #{newLeaf.getPayload()}, old value: #{oldPayload}"
 
                 previousItem = item
 
@@ -232,6 +237,9 @@ do (App) ->
             #console.log traceStr
 
         get: (key) ->
+
+        log: (fn) ->
+            @_logHandlers.push fn
     
     # Private
     
@@ -308,6 +316,10 @@ do (App) ->
                     offsets.unshift previousLeafDistance/2
 
         offsets
+
+    _triggerLog = (info) ->
+        for fn in @_logHandlers
+            fn.call this, info
     
     # End of BSTDemo
     
@@ -319,6 +331,9 @@ $ ->
     console.log "BST Demo"
 
     bstDemo = new App.BSTDemo "bst-demo"
+    bstDemo.log (e)->
+        $log.text e
+
     # bstDemo.put 4, "node 4"
     # bstDemo.put 2, "node 2"
     # bstDemo.put 5, "node 5"
@@ -338,6 +353,8 @@ $ ->
     $key_select = $('#key_select')
     $value_input = $('#value_input')
     $add_button = $('#add_button')
+
+    $log = $('#bst-demo .log')
 
     $add_button.click (e)->
         e.preventDefault()

@@ -174,7 +174,7 @@
     })();
   })(App);
   (function(App) {
-    var BSTDemo, _calcHOffsetToFatherLeaf, _setLevels, _updateTree;
+    var BSTDemo, _calcHOffsetToFatherLeaf, _setLevels, _triggerLog, _updateTree;
     BSTDemo = (function() {
       function BSTDemo(container, width, height) {
         if (width == null) {
@@ -193,9 +193,10 @@
         this._leafRadius = 20;
         this._minLeafDistance = 60;
         this._verticalLevelDistance = 80;
+        this._logHandlers = [];
       }
       BSTDemo.prototype.put = function(key, value) {
-        var branch, item, iterator, leaf, level, newLeaf, oldLeaf, oldLevel, oldPos, previousItem, status, trace, traceStr, _results;
+        var branch, item, iterator, leaf, level, newLeaf, oldLeaf, oldLevel, oldPayload, oldPos, previousItem, status, trace, traceStr, _results;
         leaf = this._paper.algLeaf(this._centerX, this._centerY, key, this._leafRadius);
         leaf.setPayload(value);
         leaf.key = key;
@@ -229,9 +230,11 @@
               level = Math.max(level, this._levels);
               _setLevels.call(this, level);
               leaf.show(true);
+              _triggerLog.call(this, "created new leaf, key: " + leaf.key + ", value: " + (leaf.getPayload()));
             } else {
               status = "update ";
               oldLeaf = item.oldValue;
+              oldPayload = oldLeaf.getPayload();
               oldPos = oldLeaf.getPosition();
               oldLevel = oldLeaf.level;
               oldLeaf.remove();
@@ -242,6 +245,7 @@
                 newLeaf.connect(previousItem.value);
               }
               newLeaf.show(true);
+              _triggerLog.call(this, "updated leaf, key: " + newLeaf.key + ", new value: " + (newLeaf.getPayload()) + ", old value: " + oldPayload);
             }
           }
           previousItem = item;
@@ -250,6 +254,9 @@
         return _results;
       };
       BSTDemo.prototype.get = function(key) {};
+      BSTDemo.prototype.log = function(fn) {
+        return this._logHandlers.push(fn);
+      };
       return BSTDemo;
     })();
     _setLevels = function(newLevels) {
@@ -321,15 +328,29 @@
       }
       return offsets;
     };
+    _triggerLog = function(info) {
+      var fn, _i, _len, _ref, _results;
+      _ref = this._logHandlers;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        fn = _ref[_i];
+        _results.push(fn.call(this, info));
+      }
+      return _results;
+    };
     return App.BSTDemo = BSTDemo;
   })(App);
   $(function() {
-    var $add_button, $key_select, $value_input, bstDemo;
+    var $add_button, $key_select, $log, $value_input, bstDemo;
     console.log("BST Demo");
     bstDemo = new App.BSTDemo("bst-demo");
+    bstDemo.log(function(e) {
+      return $log.text(e);
+    });
     $key_select = $('#key_select');
     $value_input = $('#value_input');
     $add_button = $('#add_button');
+    $log = $('#bst-demo .log');
     return $add_button.click(function(e) {
       var key, value;
       e.preventDefault();
