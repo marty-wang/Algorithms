@@ -41,6 +41,21 @@
       Leaf.prototype.getPayload = function() {
         return this._payload;
       };
+      Leaf.prototype.show = function(animate) {
+        var props;
+        if (animate == null) {
+          animate = false;
+        }
+        props = {
+          transform: "s1",
+          opacity: 1
+        };
+        if (animate) {
+          return this._set.animate(props, 250, "<>");
+        } else {
+          return this._set.attr(props);
+        }
+      };
       Leaf.prototype.move = function(x, y, animate) {
         var animDuraiton, props;
         if (animate == null) {
@@ -86,11 +101,13 @@
         }
         self = this;
         if (animate) {
+          this._centerLine.remove();
+          this._branch.remove();
           return this._set.animate({
             transform: 's0',
             opacity: 0
           }, 250, '<>', function() {
-            _remove.call(self);
+            self._set.remove();
             if (fn != null) {
               return fn.call(self);
             }
@@ -139,6 +156,10 @@
         this._branch.attr({
           stroke: "white",
           "stroke-width": 2
+        });
+        this._set.attr({
+          transform: "s0",
+          opacity: 0
         });
         return this.move(this._x, this._y);
       };
@@ -207,18 +228,20 @@
               leaf.level = level - 1;
               level = Math.max(level, this._levels);
               _setLevels.call(this, level);
+              leaf.show(true);
             } else {
               status = "update ";
               oldLeaf = item.oldValue;
               oldPos = oldLeaf.getPosition();
               oldLevel = oldLeaf.level;
-              oldLeaf.remove(true);
+              oldLeaf.remove();
               newLeaf = item.value;
               newLeaf.level = oldLevel;
               newLeaf.move(oldPos[0], oldPos[1]);
               if (previousItem != null) {
                 newLeaf.connect(previousItem.value);
               }
+              newLeaf.show(true);
             }
           }
           previousItem = item;

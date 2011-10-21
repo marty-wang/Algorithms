@@ -37,6 +37,16 @@ do (App) ->
 
         getPayload: ->
             @_payload
+
+        show: (animate = false)->
+            props = {
+                transform: "s1"
+                opacity: 1
+            }
+            if animate
+                @_set.animate props, 250, "<>"
+            else
+                @_set.attr props
         
         move: (x, y, animate = false) ->
             @_x = x
@@ -77,11 +87,13 @@ do (App) ->
         remove: (animate = false, fn) ->
             self = this
             if animate
+                @_centerLine.remove()
+                @_branch.remove()
                 @_set.animate {
                     transform: 's0'
                     opacity: 0
                 }, 250, '<>', ->
-                    _remove.call self
+                    self._set.remove()
                     fn.call self if fn?
             else
                 _remove.call this
@@ -133,6 +145,11 @@ do (App) ->
             @_branch.attr {
                 stroke: "white"
                 "stroke-width": 2
+            }
+
+            @_set.attr {
+                transform: "s0"
+                opacity: 0
             }
 
             this.move @_x, @_y
@@ -194,16 +211,19 @@ do (App) ->
                         leaf.level = level - 1
                         level = Math.max level, @_levels
                         _setLevels.call this, level
+                        leaf.show true
                     else # updated existing leaf
                         status = "update "
                         oldLeaf = item.oldValue
                         oldPos = oldLeaf.getPosition()
                         oldLevel = oldLeaf.level
-                        oldLeaf.remove(true)
+                        oldLeaf.remove()                      
+                        # oldLeaf.remove true, ->                        
                         newLeaf = item.value
                         newLeaf.level = oldLevel
                         newLeaf.move oldPos[0], oldPos[1]
                         newLeaf.connect previousItem.value if previousItem?
+                        newLeaf.show true
 
                 previousItem = item
 
