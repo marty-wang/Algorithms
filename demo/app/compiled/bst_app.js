@@ -70,7 +70,7 @@
         });
         this._label.attr({
           fill: "white",
-          "font-size": 12,
+          "font-size": 20,
           "font-weight": 800,
           text: this._text
         });
@@ -97,7 +97,7 @@
     BSTDemo = (function() {
       function BSTDemo(container, width, height) {
         if (width == null) {
-          width = 640;
+          width = 1024;
         }
         if (height == null) {
           height = 480;
@@ -109,9 +109,9 @@
         this._levels = 0;
         this._centerX = width / 2;
         this._centerY = 100;
-        this._leafRadius = 10;
-        this._minLeafDistance = 40;
-        this._verticalLevelDistance = 40;
+        this._leafRadius = 20;
+        this._minLeafDistance = 60;
+        this._verticalLevelDistance = 80;
         _setup.call(this);
       }
       BSTDemo.prototype.put = function(key, value) {
@@ -234,7 +234,7 @@
     return App.BSTDemo = BSTDemo;
   })(App);
   $(function() {
-    var bstDemo;
+    var $add_button, $key_select, $value_input, bstDemo;
     console.log("BST Demo");
     bstDemo = new App.BSTDemo("bst-demo");
     bstDemo.put(4, "node 4");
@@ -246,6 +246,21 @@
     bstDemo.put(0.5, "node 0.5");
     bstDemo.put(0.25, "node 0.25");
     bstDemo.put(0.75, "node 0.75");
-    return bstDemo.put(1.5, "node 1.5");
+    bstDemo.put(1.5, "node 1.5");
+    bstDemo.put(4.5, "node 4.5");
+    bstDemo.put(5.5, "node 5.5");
+    $key_select = $('#key_select');
+    $value_input = $('#value_input');
+    $add_button = $('#add_button');
+    return $add_button.click(function(e) {
+      var key, value;
+      e.preventDefault();
+      key = $key_select.val();
+      value = $value_input.val();
+      if (value === "") {
+        value = "Leaf " + key;
+      }
+      return bstDemo.put(key, value);
+    });
   });
 }).call(this);

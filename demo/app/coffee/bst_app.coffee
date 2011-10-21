@@ -69,7 +69,7 @@ do (App) ->
 
             @_label.attr {
                 fill: "white"
-                "font-size": 12
+                "font-size": 20
                 "font-weight": 800
                 text: @_text
             }
@@ -95,7 +95,7 @@ do (App) ->
 
     class BSTDemo
     
-        constructor: (container, width = 640, height = 480) ->
+        constructor: (container, width = 1024, height = 480) ->
             @_width = width
             @_height = height
             @_paper = Raphael container, width, height
@@ -104,9 +104,9 @@ do (App) ->
 
             @_centerX = width / 2
             @_centerY = 100
-            @_leafRadius = 10
-            @_minLeafDistance = 40 # from leaf center to leaf center
-            @_verticalLevelDistance = 40
+            @_leafRadius = 20
+            @_minLeafDistance = 60 # from leaf center to leaf center
+            @_verticalLevelDistance = 80
 
             _setup.call this
         
@@ -157,12 +157,6 @@ do (App) ->
             fill: "gray"
             stroke: "none"
         }
-        # @_paper.path("M#{@_centerX} #{@_centerY}L#{@_centerX} #{@_centerY+400}").attr {
-        #     stroke: "white"
-        #     "stroke-width": 2
-        #     "stroke-dasharray": "-"
-        #     "stroke-opacity": 0.5
-        # }
     
     _setLevels = (newLevels) ->
         @_levels = newLevels
@@ -254,6 +248,18 @@ $ ->
     bstDemo.put 0.25, "node 0.25"
     bstDemo.put 0.75, "node 0.75"
     bstDemo.put 1.5, "node 1.5"
+    bstDemo.put 4.5, "node 4.5"
+    bstDemo.put 5.5, "node 5.5"
 
-    # bstDemo.put 2, "node 22"
+    #bstDemo.put 2, "node 22"
 
+    $key_select = $('#key_select')
+    $value_input = $('#value_input')
+    $add_button = $('#add_button')
+
+    $add_button.click (e)->
+        e.preventDefault()
+        key = $key_select.val()
+        value = $value_input.val()
+        value = "Leaf #{key}" if value is ""
+        bstDemo.put key, value
