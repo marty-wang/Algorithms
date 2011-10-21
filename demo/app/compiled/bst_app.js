@@ -22,6 +22,7 @@
         this._leaf = null;
         this._label = null;
         this._centerLine = null;
+        this._branch = null;
         this.level = 0;
         this.payload = null;
         this.key = null;
@@ -51,18 +52,32 @@
           return this._set.attr(props);
         }
       };
+      Leaf.prototype.connect = function(leaf) {
+        var cx1, cy1, myCx, myCy, pos;
+        myCx = this._x;
+        myCy = this._y;
+        pos = leaf.getPosition();
+        cx1 = pos[0];
+        cy1 = pos[1];
+        this._branch.attr({
+          path: "M" + myCx + " " + myCy + "L" + cx1 + " " + cy1
+        });
+        return this._branch.toBack();
+      };
       _render = function() {
-        var centerLine, label, leaf, set;
+        var branch, centerLine, label, leaf, set;
         if (this._set == null) {
           set = this._paper.set();
+          centerLine = this._paper.path();
+          branch = this._paper.path();
           leaf = this._paper.circle(this._x, this._y, this._radius);
           label = this._paper.text(this._x, this._y, this._text);
-          centerLine = this._paper.path();
           set.push(leaf, label, centerLine);
           this._leaf = leaf;
           this._label = label;
           this._centerLine = centerLine;
           this._set = set;
+          this._branch = branch;
         }
         this._leaf.attr({
           stroke: "white",
@@ -79,6 +94,10 @@
           "stroke-width": 2,
           "stroke-dasharray": "-",
           "stroke-opacity": 0.5
+        });
+        this._branch.attr({
+          stroke: "white",
+          "stroke-width": 2
         });
         return this.move(this._x, this._y);
       };
@@ -158,12 +177,7 @@
       BSTDemo.prototype.get = function(key) {};
       return BSTDemo;
     })();
-    _setup = function() {
-      return this._paper.rect(0, 0, this._width, this._height, 10).attr({
-        fill: "gray",
-        stroke: "none"
-      });
-    };
+    _setup = function() {};
     _setLevels = function(newLevels) {
       this._levels = newLevels;
       return _updateTree.call(this);
@@ -189,18 +203,20 @@
             if (item1.key > leaf.key) {
               leaf.move(pos[0] - h, pos[1] + v);
               stack.push(item1);
-              return stack.push(leaf);
+              stack.push(leaf);
             } else if (item1.key < leaf.key) {
               leaf.move(pos[0] + h, pos[1] + v);
               stack.push(item1);
-              return stack.push(leaf);
+              stack.push(leaf);
             }
+            return leaf.connect(item1);
           } else if (item1.level === leaf.level) {
             item2 = stack.pop();
             pos = item2.getPosition();
             leaf.move(pos[0] + h, pos[1] + v);
             stack.push(item2);
-            return stack.push(leaf);
+            stack.push(leaf);
+            return leaf.connect(item2);
           }
         } catch (e) {
           return stack.push(leaf);
@@ -237,18 +253,6 @@
     var $add_button, $key_select, $value_input, bstDemo;
     console.log("BST Demo");
     bstDemo = new App.BSTDemo("bst-demo");
-    bstDemo.put(4, "node 4");
-    bstDemo.put(2, "node 2");
-    bstDemo.put(5, "node 5");
-    bstDemo.put(6, "node 6");
-    bstDemo.put(1, "node 1");
-    bstDemo.put(3, "node 3");
-    bstDemo.put(0.5, "node 0.5");
-    bstDemo.put(0.25, "node 0.25");
-    bstDemo.put(0.75, "node 0.75");
-    bstDemo.put(1.5, "node 1.5");
-    bstDemo.put(4.5, "node 4.5");
-    bstDemo.put(5.5, "node 5.5");
     $key_select = $('#key_select');
     $value_input = $('#value_input');
     $add_button = $('#add_button');

@@ -16,6 +16,7 @@ do (App) ->
             @_leaf = null
             @_label = null
             @_centerLine = null
+            @_branch = null
 
             # property
             @level = 0
@@ -46,21 +47,37 @@ do (App) ->
             else
                 @_set.attr props
 
+        connect: (leaf) ->
+            myCx = @_x
+            myCy = @_y
+
+            pos = leaf.getPosition()
+            cx1 = pos[0]
+            cy1 = pos[1]
+
+            @_branch.attr {
+                path: "M#{myCx} #{myCy}L#{cx1} #{cy1}"
+            }
+            @_branch.toBack()
 
         # Private
 
         _render = ->
             unless @_set?
                 set = @_paper.set()
+                centerLine = @_paper.path()
+                branch = @_paper.path()
                 leaf = @_paper.circle @_x, @_y, @_radius
                 label = @_paper.text @_x, @_y, @_text
-                centerLine = @_paper.path()
                 set.push leaf, label, centerLine
 
                 @_leaf = leaf
                 @_label = label
                 @_centerLine = centerLine
                 @_set = set
+
+                @_branch = branch
+                
 
             @_leaf.attr {
                 stroke: "white"
@@ -79,6 +96,11 @@ do (App) ->
                 "stroke-width": 2
                 "stroke-dasharray": "-"
                 "stroke-opacity": 0.5
+            }
+
+            @_branch.attr {
+                stroke: "white"
+                "stroke-width": 2
             }
 
             this.move @_x, @_y
@@ -153,10 +175,10 @@ do (App) ->
     # Private
 
     _setup = ->
-        @_paper.rect(0, 0, @_width, @_height, 10).attr {
-            fill: "gray"
-            stroke: "none"
-        }
+        # @_paper.rect(0, 0, @_width, @_height, 10).attr {
+        #     fill: "gray"
+        #     stroke: "none"
+        # }
     
     _setLevels = (newLevels) ->
         @_levels = newLevels
@@ -190,6 +212,8 @@ do (App) ->
                         leaf.move pos[0]+h, pos[1]+v
                         stack.push item1
                         stack.push leaf
+                    
+                    leaf.connect item1
                         
                 else if item1.level is leaf.level # This leaf is the right sibling of the item1
                     item2 = stack.pop() # the father item of item1 and this leaf
@@ -197,6 +221,8 @@ do (App) ->
                     leaf.move pos[0]+h, pos[1]+v
                     stack.push item2
                     stack.push leaf
+
+                    leaf.connect item2
 
             catch e
                 # This is root
@@ -237,19 +263,19 @@ $ ->
     console.log "BST Demo"
 
     bstDemo = new App.BSTDemo "bst-demo"
-    bstDemo.put 4, "node 4"
-    bstDemo.put 2, "node 2"
-    bstDemo.put 5, "node 5"
-    bstDemo.put 6, "node 6"
+    # bstDemo.put 4, "node 4"
+    # bstDemo.put 2, "node 2"
+    # bstDemo.put 5, "node 5"
+    # bstDemo.put 6, "node 6"
     
-    bstDemo.put 1, "node 1"
-    bstDemo.put 3, "node 3"
-    bstDemo.put 0.5, "node 0.5"
-    bstDemo.put 0.25, "node 0.25"
-    bstDemo.put 0.75, "node 0.75"
-    bstDemo.put 1.5, "node 1.5"
-    bstDemo.put 4.5, "node 4.5"
-    bstDemo.put 5.5, "node 5.5"
+    # bstDemo.put 1, "node 1"
+    # bstDemo.put 3, "node 3"
+    # bstDemo.put 0.5, "node 0.5"
+    # bstDemo.put 0.25, "node 0.25"
+    # bstDemo.put 0.75, "node 0.75"
+    # bstDemo.put 1.5, "node 1.5"
+    # bstDemo.put 4.5, "node 4.5"
+    # bstDemo.put 5.5, "node 5.5"
 
     #bstDemo.put 2, "node 22"
 
