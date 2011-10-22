@@ -1,30 +1,38 @@
 do (App) ->
 
-    Raphael.fn.algLeaf = (x, y, text="", r=20) ->
-        return new Leaf this, x, y, text, r
+    Raphael.fn.algLeaf = (x, y, key, text="", r=20) ->
+        return new Leaf this, x, y, key, text, r
 
     class Leaf
     
-        constructor: (paper, x, y, text, r) ->
+        constructor: (paper, x, y, key, text, r) ->
             @_paper = paper
             @_x = x
             @_y = y
+            @_key = key
             @_text = text
             @_radius = r
 
-            @_set = null
-            @_leaf = null
-            @_label = null
-            @_centerLine = null
-            @_branch = null
+            # UI
+            @_set = @_paper.set()
+            @_branch = @_paper.path()
+            @_centerLine = @_paper.path()
+            @_leaf = @_paper.circle @_x, @_y, @_radius
+            @_label = @_paper.text @_x, @_y, @_text            
+            @_set.push @_leaf, @_label, @_branch
+
+            @_branchEnd = [@_x, @_y]
+
+            @_payload = null
 
             # property
             @level = 0
-            @_payload = null
-            @key = null # TODO: key probably should be set in constructor and should not be writtable
 
             _render.call this
             _registerEventHandler.call this
+
+        getKey: ->
+            @_key
 
         getPosition: ->
             [@_x, @_y]
@@ -52,11 +60,17 @@ do (App) ->
             @_x = x
             @_y = y
 
+            cx1 = @_branchEnd[0]
+            cy1 = @_branchEnd[1]
+
+            branchPath = "M#{x} #{y}L#{cx1} #{cy1}"
+
             props = {
                 cx: x
                 cy: y
                 x: x
                 y: y
+                path: branchPath
             }
 
             if animate
@@ -70,6 +84,8 @@ do (App) ->
                 @_centerLine.attr {
                     path: "M#{@_x} #{@_y}L#{@_x} #{@_y+400}"
                 }
+            
+            @_branch.toBack()
 
         connect: (leaf) ->
             myCx = @_x
@@ -78,6 +94,8 @@ do (App) ->
             pos = leaf.getPosition()
             cx1 = pos[0]
             cy1 = pos[1]
+
+            @_branchEnd = [cx1, cy1]
 
             @_branch.attr {
                 path: "M#{myCx} #{myCy}L#{cx1} #{cy1}"
@@ -106,22 +124,6 @@ do (App) ->
             @_branch.remove()
 
         _render = ->
-            unless @_set?
-                set = @_paper.set()
-                centerLine = @_paper.path()
-                branch = @_paper.path()
-                leaf = @_paper.circle @_x, @_y, @_radius
-                label = @_paper.text @_x, @_y, @_text
-                set.push leaf, label
-
-                @_leaf = leaf
-                @_label = label
-                @_set = set
-
-                @_centerLine = centerLine
-                @_branch = branch
-                
-
             @_leaf.attr {
                 stroke: "white"
                 fill: "black"
@@ -182,9 +184,8 @@ do (App) ->
             @_logHandlers = []
         
         put: (key, value) ->
-            leaf = @_paper.algLeaf @_centerX, @_centerY, key, @_leafRadius
+            leaf = @_paper.algLeaf @_centerX, @_centerY, key, key, @_leafRadius
             leaf.setPayload value
-            leaf.key = key
 
             trace = new Alg.Stack()
             @_data.put key, leaf, (obj)->
@@ -214,7 +215,7 @@ do (App) ->
                         level = Math.max level, @_levels
                         _setLevels.call this, level
                         leaf.show true
-                        _triggerLog.call this, "created new leaf, key: #{leaf.key}, value: #{leaf.getPayload()}"
+                        _triggerLog.call this, "created new leaf, key: #{leaf.getKey()}, value: #{leaf.getPayload()}"
                     else # updated existing leaf
                         status = "update "
                         oldLeaf = item.oldValue
@@ -228,7 +229,7 @@ do (App) ->
                         newLeaf.move oldPos[0], oldPos[1]
                         newLeaf.connect previousItem.value if previousItem?
                         newLeaf.show true
-                        _triggerLog.call this, "updated leaf, key: #{newLeaf.key}, new value: #{newLeaf.getPayload()}, old value: #{oldPayload}"
+                        _triggerLog.call this, "updated leaf, key: #{newLeaf.getKey()}, new value: #{newLeaf.getPayload()}, old value: #{oldPayload}"
 
                 previousItem = item
 
@@ -268,25 +269,23 @@ do (App) ->
                     item1 = stack.pop()
                 if item1.level < leaf.level # This leaf is the child item of the item1
                     pos = item1.getPosition()
-                    if item1.key > leaf.key # leaf is the left child of the item1
-                        leaf.move pos[0]-h, pos[1]+v
-                        stack.push item1
-                        stack.push leaf
-                    else if item1.key < leaf.key # leaf is the right child of the item1
-                        leaf.move pos[0]+h, pos[1]+v
-                        stack.push item1
-                        stack.push leaf
-                    
                     leaf.connect item1
+                    if item1.getKey() > leaf.getKey() # leaf is the left child of the item1
+                        leaf.move pos[0]-h, pos[1]+v, true
+                        stack.push item1
+                        stack.push leaf
+                    else if item1.getKey() < leaf.getKey() # leaf is the right child of the item1
+                        leaf.move pos[0]+h, pos[1]+v, true
+                        stack.push item1
+                        stack.push leaf                    
                         
                 else if item1.level is leaf.level # This leaf is the right sibling of the item1
                     item2 = stack.pop() # the father item of item1 and this leaf
                     pos = item2.getPosition()
-                    leaf.move pos[0]+h, pos[1]+v
+                    leaf.connect item2
+                    leaf.move pos[0]+h, pos[1]+v, true
                     stack.push item2
                     stack.push leaf
-
-                    leaf.connect item2
 
             catch e
                 # This is root
