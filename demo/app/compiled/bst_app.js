@@ -1,4 +1,5 @@
 (function() {
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
   (function(App) {
     var Leaf;
     Raphael.fn.algLeaf = function(x, y, key, text, r) {
@@ -24,17 +25,18 @@
         this._centerLine = this._paper.path();
         this._leaf = this._paper.circle(this._x, this._y, this._radius);
         this._label = this._paper.text(this._x, this._y, this._text);
-        this._set.push(this._leaf, this._label, this._branch);
+        this._set.push(this._leaf, this._label);
         this._branchEnd = [this._x, this._y];
         this._payload = null;
         this.level = 0;
+        this._animDuration = 250;
         _render.call(this);
         _registerEventHandler.call(this);
       }
       Leaf.prototype.getKey = function() {
         return this._key;
       };
-      Leaf.prototype.getPosition = function() {
+      Leaf.prototype.getCenter = function() {
         return [this._x, this._y];
       };
       Leaf.prototype.setPayload = function(payload) {
@@ -47,7 +49,7 @@
         return this._payload;
       };
       Leaf.prototype.show = function(animate) {
-        var props;
+        var animDuration, props;
         if (animate == null) {
           animate = false;
         }
@@ -55,55 +57,64 @@
           transform: "s1",
           opacity: 1
         };
+        animDuration = this._animDuration;
         if (animate) {
-          return this._set.animate(props, 250, "<>");
+          this._set.animate(props, animDuration, "<>");
+          return this._branch.animate(props, animDuration, "<>");
         } else {
-          return this._set.attr(props);
+          this._set.attr(props);
+          return this._branch.props;
         }
       };
-      Leaf.prototype.move = function(x, y, animate) {
-        var animDuraiton, branchPath, cx1, cy1, props;
+      Leaf.prototype.move = function(x, y, animate, fn) {
+        var animDuraiton, branchPath, centerLinePath, cx1, cy1, props, self;
         if (animate == null) {
           animate = false;
         }
+        self = this;
         this._x = x;
         this._y = y;
         cx1 = this._branchEnd[0];
         cy1 = this._branchEnd[1];
-        branchPath = "M" + x + " " + y + "L" + cx1 + " " + cy1;
+        branchPath = {
+          path: "M" + x + " " + y + "L" + cx1 + " " + cy1
+        };
+        centerLinePath = {
+          path: "M" + this._x + " " + this._y + "L" + this._x + " " + (this._y + 400)
+        };
         props = {
           cx: x,
           cy: y,
           x: x,
-          y: y,
-          path: branchPath
+          y: y
         };
+        this._branch.toBack();
         if (animate) {
-          animDuraiton = 500;
+          animDuraiton = this._animDuration;
           this._set.animate(props, animDuraiton);
-          this._centerLine.animate({
-            path: "M" + this._x + " " + this._y + "L" + this._x + " " + (this._y + 400)
-          }, animDuraiton);
+          this._branch.animate(branchPath, animDuraiton);
+          return this._centerLine.animate(centerLinePath, animDuraiton, function() {
+            if (fn != null) {
+              return fn.call(self);
+            }
+          });
         } else {
           this._set.attr(props);
-          this._centerLine.attr({
-            path: "M" + this._x + " " + this._y + "L" + this._x + " " + (this._y + 400)
-          });
+          this._branch.attr(branchPath);
+          this._centerLine.attr(centerLinePath);
+          if (fn != null) {
+            return fn.call(self);
+          }
         }
-        return this._branch.toBack();
       };
       Leaf.prototype.connect = function(leaf) {
-        var cx1, cy1, myCx, myCy, pos;
-        myCx = this._x;
-        myCy = this._y;
-        pos = leaf.getPosition();
+        var cx, cx1, cy, cy1, pos;
+        cx = this._x;
+        cy = this._y;
+        pos = leaf.getCenter();
         cx1 = pos[0];
         cy1 = pos[1];
-        this._branchEnd = [cx1, cy1];
-        this._branch.attr({
-          path: "M" + myCx + " " + myCy + "L" + cx1 + " " + cy1
-        });
-        return this._branch.toBack();
+        return this._branchEnd = [cx1, cy1];
       };
       Leaf.prototype.remove = function(animate, fn) {
         var self;
@@ -117,7 +128,7 @@
           return this._set.animate({
             transform: 's0',
             opacity: 0
-          }, 250, '<>', function() {
+          }, this._animDuration, '<>', function() {
             self._set.remove();
             if (fn != null) {
               return fn.call(self);
@@ -152,7 +163,8 @@
         });
         this._branch.attr({
           stroke: "white",
-          "stroke-width": 2
+          "stroke-width": 2,
+          opacity: 0
         });
         this._set.attr({
           transform: "s0",
@@ -171,7 +183,7 @@
     })();
   })(App);
   (function(App) {
-    var BSTDemo, _calcHOffsetToFatherLeaf, _setLevels, _triggerLog, _updateTree;
+    var BSTDemo, _calcHOffsetToFatherLeaf, _triggerLog, _updateTree;
     BSTDemo = (function() {
       function BSTDemo(container, width, height) {
         if (width == null) {
@@ -182,14 +194,14 @@
         }
         this._width = width;
         this._height = height;
-        this._paper = Raphael(container, width, height);
-        this._data = new Alg.BST();
-        this._levels = 0;
         this._centerX = width / 2;
         this._centerY = 100;
         this._leafRadius = 20;
         this._minLeafDistance = 60;
         this._verticalLevelDistance = 80;
+        this._paper = Raphael(container, width, height);
+        this._data = new Alg.BST();
+        this._levels = 0;
         this._logHandlers = [];
       }
       BSTDemo.prototype.put = function(key, value) {
@@ -197,8 +209,8 @@
         leaf = this._paper.algLeaf(this._centerX, this._centerY, key, key, this._leafRadius);
         leaf.setPayload(value);
         trace = new Alg.Stack();
-        this._data.put(key, leaf, function(obj) {
-          return trace.push(obj);
+        this._data.put(key, leaf, function(item) {
+          return trace.push(item);
         });
         iterator = trace.iterator();
         traceStr = "";
@@ -223,23 +235,26 @@
               status = "create ";
               level = trace.size();
               leaf.level = level - 1;
-              level = Math.max(level, this._levels);
-              _setLevels.call(this, level);
-              leaf.show(true);
+              if (level > this._levels) {
+                this._levels = level;
+              }
+              _updateTree.call(this, function() {
+                return leaf.show(true);
+              });
               _triggerLog.call(this, "created new leaf, key: " + (leaf.getKey()) + ", value: " + (leaf.getPayload()));
             } else {
               status = "update ";
               oldLeaf = item.oldValue;
               oldPayload = oldLeaf.getPayload();
-              oldPos = oldLeaf.getPosition();
+              oldPos = oldLeaf.getCenter();
               oldLevel = oldLeaf.level;
               oldLeaf.remove();
               newLeaf = item.value;
               newLeaf.level = oldLevel;
-              newLeaf.move(oldPos[0], oldPos[1]);
               if (previousItem != null) {
                 newLeaf.connect(previousItem.value);
               }
+              newLeaf.move(oldPos[0], oldPos[1]);
               newLeaf.show(true);
               _triggerLog.call(this, "updated leaf, key: " + (newLeaf.getKey()) + ", new value: " + (newLeaf.getPayload()) + ", old value: " + oldPayload);
             }
@@ -255,18 +270,12 @@
       };
       return BSTDemo;
     })();
-    _setLevels = function(newLevels) {
-      this._levels = newLevels;
-      return _updateTree.call(this);
-    };
-    _updateTree = function() {
-      var hOffsets, maxLeavesOfLastLevel, maxWidthOfLastLevel, stack, v;
-      maxLeavesOfLastLevel = Math.pow(2, this._levels - 1);
-      maxWidthOfLastLevel = (maxWidthOfLastLevel - 1) * 2 * this._leafRadius;
+    _updateTree = function(fn) {
+      var hOffsets, stack, v;
       hOffsets = _calcHOffsetToFatherLeaf.call(this, this._levels);
       v = this._verticalLevelDistance;
       stack = new Alg.Stack();
-      return this._data.iterate(-1, function(key, leaf) {
+      this._data.iterate(-1, function(key, leaf) {
         var h, item1, item2, level, pos;
         try {
           level = leaf.level;
@@ -276,7 +285,7 @@
             item1 = stack.pop();
           }
           if (item1.level < leaf.level) {
-            pos = item1.getPosition();
+            pos = item1.getCenter();
             leaf.connect(item1);
             if (item1.getKey() > leaf.getKey()) {
               leaf.move(pos[0] - h, pos[1] + v, true);
@@ -289,7 +298,7 @@
             }
           } else if (item1.level === leaf.level) {
             item2 = stack.pop();
-            pos = item2.getPosition();
+            pos = item2.getCenter();
             leaf.connect(item2);
             leaf.move(pos[0] + h, pos[1] + v, true);
             stack.push(item2);
@@ -299,6 +308,9 @@
           return stack.push(leaf);
         }
       });
+      return setTimeout((__bind(function() {
+        return fn.call(this);
+      }, this)), 250);
     };
     _calcHOffsetToFatherLeaf = function(numOfLevels) {
       var level, maxLeavesOfLastLevel, numOfLeaves, offsets, previousLeafDistance, widthOfPreviousLevel;
@@ -347,7 +359,7 @@
     $value_input = $('#value_input');
     $add_button = $('#add_button');
     $log = $('#bst-demo .log');
-    return $add_button.click(function(e) {
+    $add_button.click(function(e) {
       var key, value;
       e.preventDefault();
       key = $key_select.val();
@@ -357,6 +369,14 @@
         value = "Leaf " + key;
       }
       return bstDemo.put(key, value);
+    });
+    return $(document).bind("keypress", function(e) {
+      var key, value, _ref;
+      if ((48 <= (_ref = e.keyCode) && _ref <= 57)) {
+        key = e.keyCode - 48;
+        value = "Leaf " + key;
+        return bstDemo.put(key, value);
+      }
     });
   });
 }).call(this);
