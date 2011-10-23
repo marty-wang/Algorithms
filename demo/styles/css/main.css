@@ -70,7 +70,7 @@
   width: 1024px;
 }
 #bst .demo.part {
-  height: 540px;
+  height: 580px;
   background: gray;
 }
 #bst .input_panel {
@@ -80,6 +80,9 @@
 }
 #bst .input_panel .item {
   display: inline-block;
+}
+#bst .notes {
+  margin: 25px 0 0 10px;
 }
 #bst .log {
   position: absolute;
