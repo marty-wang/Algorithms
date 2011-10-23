@@ -265,6 +265,7 @@
         return _results;
       };
       BSTDemo.prototype.get = function(key) {};
+      BSTDemo.prototype.clear = function() {};
       BSTDemo.prototype.log = function(fn) {
         return this._logHandlers.push(fn);
       };

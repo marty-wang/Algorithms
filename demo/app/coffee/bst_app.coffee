@@ -250,6 +250,9 @@ do (App) ->
 
         get: (key) ->
 
+        clear: ->
+            # clear all leafs from @_data
+
         log: (fn) ->
             @_logHandlers.push fn
     
@@ -352,7 +355,6 @@ $ ->
         value = "Leaf #{key}" if value is ""
         bstDemo.put key, value
     
-    # for debug purpose
     $(document).bind "keypress", (e)->
         if 48 <= e.keyCode <= 57
             key = e.keyCode - 48
