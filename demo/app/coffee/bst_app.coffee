@@ -16,7 +16,7 @@ do (App) ->
             # UI
             @_set = @_paper.set()
             @_branch = @_paper.path()
-            @_centerLine = @_paper.path()
+            @_centerLine = @_paper.path("M#{x} #{y}L#{x} #{y}")
             @_leaf = @_paper.circle @_x, @_y, @_radius
             @_label = @_paper.text @_x, @_y, @_text            
             
@@ -55,12 +55,18 @@ do (App) ->
                 opacity: 1
             }
             animDuration = @_animDuration
+            centerLinePath = {
+                path: "M#{@_x} #{@_y}L#{@_x} #{@_y+400}"
+                opacity: 1
+            }
             if animate
                 @_set.animate props, animDuration, "<>"
                 @_branch.animate props, animDuration, "<>"
+                @_centerLine.animate centerLinePath, animDuration, "<>"
             else
                 @_set.attr props
-                @_branch.props
+                @_branch.attr props
+                @_centerLine.attr props
         
         move: (x, y, animate = false, fn) ->
             self = this
@@ -149,6 +155,7 @@ do (App) ->
                 "stroke-width": 2
                 "stroke-dasharray": "-"
                 "stroke-opacity": 0.5
+                opacity: 0
             }
 
             @_branch.attr {
@@ -161,8 +168,6 @@ do (App) ->
                 transform: "s0"
                 opacity: 0
             }
-
-            this.move @_x, @_y
         
         _registerEventHandler = ->
             self = this

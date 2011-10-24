@@ -22,7 +22,7 @@
         this._radius = r;
         this._set = this._paper.set();
         this._branch = this._paper.path();
-        this._centerLine = this._paper.path();
+        this._centerLine = this._paper.path("M" + x + " " + y + "L" + x + " " + y);
         this._leaf = this._paper.circle(this._x, this._y, this._radius);
         this._label = this._paper.text(this._x, this._y, this._text);
         this._set.push(this._leaf, this._label);
@@ -49,7 +49,7 @@
         return this._payload;
       };
       Leaf.prototype.show = function(animate) {
-        var animDuration, props;
+        var animDuration, centerLinePath, props;
         if (animate == null) {
           animate = false;
         }
@@ -58,12 +58,18 @@
           opacity: 1
         };
         animDuration = this._animDuration;
+        centerLinePath = {
+          path: "M" + this._x + " " + this._y + "L" + this._x + " " + (this._y + 400),
+          opacity: 1
+        };
         if (animate) {
           this._set.animate(props, animDuration, "<>");
-          return this._branch.animate(props, animDuration, "<>");
+          this._branch.animate(props, animDuration, "<>");
+          return this._centerLine.animate(centerLinePath, animDuration, "<>");
         } else {
           this._set.attr(props);
-          return this._branch.props;
+          this._branch.attr(props);
+          return this._centerLine.attr(props);
         }
       };
       Leaf.prototype.move = function(x, y, animate, fn) {
@@ -159,18 +165,18 @@
           stroke: "white",
           "stroke-width": 2,
           "stroke-dasharray": "-",
-          "stroke-opacity": 0.5
+          "stroke-opacity": 0.5,
+          opacity: 0
         });
         this._branch.attr({
           stroke: "white",
           "stroke-width": 2,
           opacity: 0
         });
-        this._set.attr({
+        return this._set.attr({
           transform: "s0",
           opacity: 0
         });
-        return this.move(this._x, this._y);
       };
       _registerEventHandler = function() {
         var self;
