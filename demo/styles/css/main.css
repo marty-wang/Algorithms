@@ -95,6 +95,9 @@
   padding: 4px;
   margin: 10px;
 }
+#bst .log.update, #bst .trace.update {
+  color: yellow;
+}
 #bst .trace {
   font-size: 16px;
   font-weight: normal;
