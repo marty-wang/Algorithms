@@ -22,12 +22,13 @@
         this._radius = r;
         this._set = this._paper.set();
         this._branch = this._paper.path();
-        this._centerLine = this._paper.path();
+        this._centerLine = this._paper.path("M" + x + " " + y + "L" + x + " " + y);
         this._leaf = this._paper.circle(this._x, this._y, this._radius);
         this._label = this._paper.text(this._x, this._y, this._text);
         this._set.push(this._leaf, this._label);
         this._branchEnd = [this._x, this._y];
         this._payload = null;
+        this._highlightBranchTimer = null;
         this.level = 0;
         this._animDuration = 250;
         _render.call(this);
@@ -49,7 +50,7 @@
         return this._payload;
       };
       Leaf.prototype.show = function(animate) {
-        var animDuration, props;
+        var animDuration, centerLinePath, props;
         if (animate == null) {
           animate = false;
         }
@@ -58,13 +59,40 @@
           opacity: 1
         };
         animDuration = this._animDuration;
+        centerLinePath = {
+          path: "M" + this._x + " " + this._y + "L" + this._x + " " + (this._y + 400),
+          opacity: 1
+        };
         if (animate) {
           this._set.animate(props, animDuration, "<>");
-          return this._branch.animate(props, animDuration, "<>");
+          this._branch.animate(props, animDuration, "<>");
+          this._centerLine.animate(centerLinePath, animDuration, "<>");
         } else {
           this._set.attr(props);
-          return this._branch.props;
+          this._branch.attr(props);
+          this._centerLine.attr(props);
         }
+        return this.highlightBranch(false);
+      };
+      Leaf.prototype.highlightBranch = function(stopOldAnim) {
+        var highlightAnim, highlightColor;
+        if (stopOldAnim == null) {
+          stopOldAnim = true;
+        }
+        clearTimeout(this._highlightBranchTimer);
+        if (stopOldAnim) {
+          this._branch.stop();
+        }
+        highlightColor = "blue";
+        this._branch.attr({
+          stroke: highlightColor
+        });
+        highlightAnim = Raphael.animation({
+          stroke: "white"
+        }, 1000, "<>");
+        return this._highlightBranchTimer = setTimeout((__bind(function() {
+          return this._branch.animate(highlightAnim);
+        }, this)), 1000);
       };
       Leaf.prototype.move = function(x, y, animate, fn) {
         var animDuraiton, branchPath, centerLinePath, cx1, cy1, props, self;
@@ -159,18 +187,18 @@
           stroke: "white",
           "stroke-width": 2,
           "stroke-dasharray": "-",
-          "stroke-opacity": 0.5
+          "stroke-opacity": 0.5,
+          opacity: 0
         });
         this._branch.attr({
           stroke: "white",
           "stroke-width": 2,
           opacity: 0
         });
-        this._set.attr({
+        return this._set.attr({
           transform: "s0",
           opacity: 0
         });
-        return this.move(this._x, this._y);
       };
       _registerEventHandler = function() {
         var self;
@@ -183,7 +211,7 @@
     })();
   })(App);
   (function(App) {
-    var BSTDemo, _calcHOffsetToFatherLeaf, _triggerLog, _updateTree;
+    var BSTDemo, _calcHOffsetToFatherLeaf, _createTraceLine, _triggerLog, _updateTree;
     BSTDemo = (function() {
       function BSTDemo(container, width, height) {
         if (width == null) {
@@ -205,7 +233,7 @@
         this._logHandlers = [];
       }
       BSTDemo.prototype.put = function(key, value) {
-        var branch, item, iterator, leaf, level, newLeaf, oldLeaf, oldLevel, oldPayload, oldPos, previousItem, status, trace, traceStr, _results;
+        var branch, curLeaf, item, iterator, leaf, level, newLeaf, oldLeaf, oldLevel, oldPayload, oldPos, previousItem, status, trace, traceStr;
         leaf = this._paper.algLeaf(this._centerX, this._centerY, key, key, this._leafRadius);
         leaf.setPayload(value);
         trace = new Alg.Stack();
@@ -215,7 +243,6 @@
         iterator = trace.iterator();
         traceStr = "";
         previousItem = null;
-        _results = [];
         while (iterator.hasNext()) {
           item = iterator.next();
           if (traceStr !== "") {
@@ -241,7 +268,10 @@
               _updateTree.call(this, function() {
                 return leaf.show(true);
               });
-              _triggerLog.call(this, "created new leaf, key: " + (leaf.getKey()) + ", value: " + (leaf.getPayload()));
+              _triggerLog.call(this, {
+                type: "log",
+                message: "created new leaf, key: " + (leaf.getKey()) + ", value: " + (leaf.getPayload())
+              });
             } else {
               status = "update ";
               oldLeaf = item.oldValue;
@@ -256,13 +286,22 @@
               }
               newLeaf.move(oldPos[0], oldPos[1]);
               newLeaf.show(true);
-              _triggerLog.call(this, "updated leaf, key: " + (newLeaf.getKey()) + ", new value: " + (newLeaf.getPayload()) + ", old value: " + oldPayload);
+              _triggerLog.call(this, {
+                type: "log",
+                message: "updated leaf, key: " + (newLeaf.getKey()) + ", new value: " + (newLeaf.getPayload()) + ", old value: " + oldPayload
+              });
             }
+          } else {
+            curLeaf = item.value;
+            curLeaf.highlightBranch();
           }
           previousItem = item;
-          _results.push(traceStr += status + ("node: '" + item.key + "' " + branch));
+          traceStr += status + ("leaf: '" + item.key + "' " + branch);
         }
-        return _results;
+        return _triggerLog.call(this, {
+          type: "trace",
+          message: traceStr
+        });
       };
       BSTDemo.prototype.get = function(key) {};
       BSTDemo.prototype.clear = function() {};
@@ -271,6 +310,15 @@
       };
       return BSTDemo;
     })();
+    _createTraceLine = function(trace) {
+      var curLeaf, iterator, _results;
+      iterator = trace.iterator();
+      _results = [];
+      while (iterator.hasNext()) {
+        _results.push(curLeaf = iterator.next().value);
+      }
+      return _results;
+    };
     _updateTree = function(fn) {
       var hOffsets, stack, v;
       hOffsets = _calcHOffsetToFatherLeaf.call(this, this._levels);
@@ -350,16 +398,22 @@
     return App.BSTDemo = BSTDemo;
   })(App);
   $(function() {
-    var $add_button, $key_select, $log, $value_input, bstDemo;
+    var $add_button, $key_select, $log, $trace, $value_input, bstDemo;
     console.log("BST Demo");
     bstDemo = new App.BSTDemo("bst-demo");
     bstDemo.log(function(e) {
-      return $log.text(e);
+      switch (e.type) {
+        case "log":
+          return $log.text(e.message);
+        case "trace":
+          return $trace.text(e.message);
+      }
     });
     $key_select = $('#key_select');
     $value_input = $('#value_input');
     $add_button = $('#add_button');
     $log = $('#bst-demo .log');
+    $trace = $('#bst-demo .trace');
     $add_button.click(function(e) {
       var key, value;
       e.preventDefault();

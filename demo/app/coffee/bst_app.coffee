@@ -16,7 +16,7 @@ do (App) ->
             # UI
             @_set = @_paper.set()
             @_branch = @_paper.path()
-            @_centerLine = @_paper.path()
+            @_centerLine = @_paper.path("M#{x} #{y}L#{x} #{y}")
             @_leaf = @_paper.circle @_x, @_y, @_radius
             @_label = @_paper.text @_x, @_y, @_text            
             
@@ -24,6 +24,7 @@ do (App) ->
 
             @_branchEnd = [@_x, @_y]
             @_payload = null
+            @_highlightBranchTimer = null
 
             # property
             @level = 0
@@ -55,12 +56,37 @@ do (App) ->
                 opacity: 1
             }
             animDuration = @_animDuration
+            centerLinePath = {
+                path: "M#{@_x} #{@_y}L#{@_x} #{@_y+400}"
+                opacity: 1
+            }
             if animate
                 @_set.animate props, animDuration, "<>"
                 @_branch.animate props, animDuration, "<>"
+                @_centerLine.animate centerLinePath, animDuration, "<>"
             else
                 @_set.attr props
-                @_branch.props
+                @_branch.attr props
+                @_centerLine.attr props
+
+            this.highlightBranch(false)
+            
+        highlightBranch: (stopOldAnim = true)->
+            clearTimeout @_highlightBranchTimer
+            @_branch.stop() if stopOldAnim
+
+            highlightColor = "blue"
+            @_branch.attr {
+                stroke: highlightColor
+            }
+
+            highlightAnim = Raphael.animation {
+                stroke: "white"
+            }, 1000, "<>"
+
+            @_highlightBranchTimer = setTimeout (=>
+                @_branch.animate highlightAnim
+            ), 1000
         
         move: (x, y, animate = false, fn) ->
             self = this
@@ -149,6 +175,7 @@ do (App) ->
                 "stroke-width": 2
                 "stroke-dasharray": "-"
                 "stroke-opacity": 0.5
+                opacity: 0
             }
 
             @_branch.attr {
@@ -161,8 +188,6 @@ do (App) ->
                 transform: "s0"
                 opacity: 0
             }
-
-            this.move @_x, @_y
         
         _registerEventHandler = ->
             self = this
@@ -225,7 +250,10 @@ do (App) ->
                         @_levels = level if level > @_levels
                         _updateTree.call this, ->
                             leaf.show true
-                        _triggerLog.call this, "created new leaf, key: #{leaf.getKey()}, value: #{leaf.getPayload()}"
+                        _triggerLog.call this, {
+                            type: "log"
+                            message: "created new leaf, key: #{leaf.getKey()}, value: #{leaf.getPayload()}"
+                        }
                     
                     else # updated existing leaf
                         status = "update "
@@ -240,13 +268,22 @@ do (App) ->
                         newLeaf.connect previousItem.value if previousItem?
                         newLeaf.move oldPos[0], oldPos[1]
                         newLeaf.show true
-                        _triggerLog.call this, "updated leaf, key: #{newLeaf.getKey()}, new value: #{newLeaf.getPayload()}, old value: #{oldPayload}"
+                        _triggerLog.call this, {
+                            type: "log"
+                            message: "updated leaf, key: #{newLeaf.getKey()}, new value: #{newLeaf.getPayload()}, old value: #{oldPayload}"
+                        }
+                else
+                    curLeaf = item.value
+                    curLeaf.highlightBranch()
 
                 previousItem = item
 
-                traceStr += status + "node: '#{item.key}' #{branch}"
+                traceStr += status + "leaf: '#{item.key}' #{branch}"
 
-            #console.log traceStr
+            _triggerLog.call this, {
+                type: "trace"
+                message: traceStr
+            }
 
         get: (key) ->
 
@@ -257,6 +294,11 @@ do (App) ->
             @_logHandlers.push fn
     
     # Private
+
+    _createTraceLine = (trace)->
+        iterator = trace.iterator()
+        while iterator.hasNext()
+            curLeaf = iterator.next().value
 
     _updateTree = (fn)->
         hOffsets = _calcHOffsetToFatherLeaf.call this, @_levels
@@ -339,13 +381,16 @@ $ ->
 
     bstDemo = new App.BSTDemo "bst-demo"
     bstDemo.log (e)->
-        $log.text e
+        switch e.type
+            when "log" then $log.text e.message
+            when "trace" then $trace.text e.message
 
     $key_select = $('#key_select')
     $value_input = $('#value_input')
     $add_button = $('#add_button')
 
     $log = $('#bst-demo .log')
+    $trace = $('#bst-demo .trace')
 
     $add_button.click (e)->
         e.preventDefault()
