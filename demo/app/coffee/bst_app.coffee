@@ -230,7 +230,10 @@ do (App) ->
                         @_levels = level if level > @_levels
                         _updateTree.call this, ->
                             leaf.show true
-                        _triggerLog.call this, "created new leaf, key: #{leaf.getKey()}, value: #{leaf.getPayload()}"
+                        _triggerLog.call this, {
+                            type: "log"
+                            message: "created new leaf, key: #{leaf.getKey()}, value: #{leaf.getPayload()}"
+                        }
                     
                     else # updated existing leaf
                         status = "update "
@@ -245,13 +248,19 @@ do (App) ->
                         newLeaf.connect previousItem.value if previousItem?
                         newLeaf.move oldPos[0], oldPos[1]
                         newLeaf.show true
-                        _triggerLog.call this, "updated leaf, key: #{newLeaf.getKey()}, new value: #{newLeaf.getPayload()}, old value: #{oldPayload}"
+                        _triggerLog.call this, {
+                            type: "log"
+                            message: "updated leaf, key: #{newLeaf.getKey()}, new value: #{newLeaf.getPayload()}, old value: #{oldPayload}"
+                        }
 
                 previousItem = item
 
-                traceStr += status + "node: '#{item.key}' #{branch}"
+                traceStr += status + "leaf: '#{item.key}' #{branch}"
 
-            #console.log traceStr
+            _triggerLog.call this, {
+                type: "trace"
+                message: traceStr
+            }
 
         get: (key) ->
 
@@ -344,13 +353,16 @@ $ ->
 
     bstDemo = new App.BSTDemo "bst-demo"
     bstDemo.log (e)->
-        $log.text e
+        switch e.type
+            when "log" then $log.text e.message
+            when "trace" then $trace.text e.message
 
     $key_select = $('#key_select')
     $value_input = $('#value_input')
     $add_button = $('#add_button')
 
     $log = $('#bst-demo .log')
+    $trace = $('#bst-demo .trace')
 
     $add_button.click (e)->
         e.preventDefault()

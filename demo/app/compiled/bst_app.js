@@ -211,7 +211,7 @@
         this._logHandlers = [];
       }
       BSTDemo.prototype.put = function(key, value) {
-        var branch, item, iterator, leaf, level, newLeaf, oldLeaf, oldLevel, oldPayload, oldPos, previousItem, status, trace, traceStr, _results;
+        var branch, item, iterator, leaf, level, newLeaf, oldLeaf, oldLevel, oldPayload, oldPos, previousItem, status, trace, traceStr;
         leaf = this._paper.algLeaf(this._centerX, this._centerY, key, key, this._leafRadius);
         leaf.setPayload(value);
         trace = new Alg.Stack();
@@ -221,7 +221,6 @@
         iterator = trace.iterator();
         traceStr = "";
         previousItem = null;
-        _results = [];
         while (iterator.hasNext()) {
           item = iterator.next();
           if (traceStr !== "") {
@@ -247,7 +246,10 @@
               _updateTree.call(this, function() {
                 return leaf.show(true);
               });
-              _triggerLog.call(this, "created new leaf, key: " + (leaf.getKey()) + ", value: " + (leaf.getPayload()));
+              _triggerLog.call(this, {
+                type: "log",
+                message: "created new leaf, key: " + (leaf.getKey()) + ", value: " + (leaf.getPayload())
+              });
             } else {
               status = "update ";
               oldLeaf = item.oldValue;
@@ -262,13 +264,19 @@
               }
               newLeaf.move(oldPos[0], oldPos[1]);
               newLeaf.show(true);
-              _triggerLog.call(this, "updated leaf, key: " + (newLeaf.getKey()) + ", new value: " + (newLeaf.getPayload()) + ", old value: " + oldPayload);
+              _triggerLog.call(this, {
+                type: "log",
+                message: "updated leaf, key: " + (newLeaf.getKey()) + ", new value: " + (newLeaf.getPayload()) + ", old value: " + oldPayload
+              });
             }
           }
           previousItem = item;
-          _results.push(traceStr += status + ("node: '" + item.key + "' " + branch));
+          traceStr += status + ("leaf: '" + item.key + "' " + branch);
         }
-        return _results;
+        return _triggerLog.call(this, {
+          type: "trace",
+          message: traceStr
+        });
       };
       BSTDemo.prototype.get = function(key) {};
       BSTDemo.prototype.clear = function() {};
@@ -356,16 +364,22 @@
     return App.BSTDemo = BSTDemo;
   })(App);
   $(function() {
-    var $add_button, $key_select, $log, $value_input, bstDemo;
+    var $add_button, $key_select, $log, $trace, $value_input, bstDemo;
     console.log("BST Demo");
     bstDemo = new App.BSTDemo("bst-demo");
     bstDemo.log(function(e) {
-      return $log.text(e);
+      switch (e.type) {
+        case "log":
+          return $log.text(e.message);
+        case "trace":
+          return $trace.text(e.message);
+      }
     });
     $key_select = $('#key_select');
     $value_input = $('#value_input');
     $add_button = $('#add_button');
     $log = $('#bst-demo .log');
+    $trace = $('#bst-demo .trace');
     $add_button.click(function(e) {
       var key, value;
       e.preventDefault();
