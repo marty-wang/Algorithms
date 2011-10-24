@@ -243,6 +243,7 @@
         iterator = trace.iterator();
         traceStr = "";
         previousItem = null;
+        status = "";
         while (iterator.hasNext()) {
           item = iterator.next();
           if (traceStr !== "") {
@@ -256,10 +257,9 @@
             case 1:
               branch = "right";
           }
-          status = "";
           if (!iterator.hasNext()) {
             if (item.oldValue == null) {
-              status = "create ";
+              status = "create";
               level = trace.size();
               leaf.level = level - 1;
               if (level > this._levels) {
@@ -270,10 +270,11 @@
               });
               _triggerLog.call(this, {
                 type: "log",
-                message: "created new leaf, key: " + (leaf.getKey()) + ", value: " + (leaf.getPayload())
+                subtype: status,
+                message: "create new leaf, key: " + (leaf.getKey()) + ", value: " + (leaf.getPayload())
               });
             } else {
-              status = "update ";
+              status = "update";
               oldLeaf = item.oldValue;
               oldPayload = oldLeaf.getPayload();
               oldPos = oldLeaf.getCenter();
@@ -288,7 +289,8 @@
               newLeaf.show(true);
               _triggerLog.call(this, {
                 type: "log",
-                message: "updated leaf, key: " + (newLeaf.getKey()) + ", new value: " + (newLeaf.getPayload()) + ", old value: " + oldPayload
+                subtype: status,
+                message: "update leaf, key: " + (newLeaf.getKey()) + ", new value: " + (newLeaf.getPayload()) + ", old value: " + oldPayload
               });
             }
           } else {
@@ -296,10 +298,11 @@
             curLeaf.highlightBranch();
           }
           previousItem = item;
-          traceStr += status + ("leaf: '" + item.key + "' " + branch);
+          traceStr += status + (" leaf: '" + item.key + "' " + branch);
         }
         return _triggerLog.call(this, {
           type: "trace",
+          subtype: status,
           message: traceStr
         });
       };
@@ -399,14 +402,32 @@
   })(App);
   $(function() {
     var $add_button, $key_select, $log, $trace, $value_input, bstDemo;
-    console.log("BST Demo");
     bstDemo = new App.BSTDemo("bst-demo");
     bstDemo.log(function(e) {
       switch (e.type) {
         case "log":
-          return $log.text(e.message);
+          $log.text(e.message);
+          if (e.subtype === "create") {
+            if ($log.hasClass("update")) {
+              return $log.removeClass("update");
+            }
+          } else if (e.subtype === "update") {
+            if (!$log.hasClass("update")) {
+              return $log.addClass("update");
+            }
+          }
+          break;
         case "trace":
-          return $trace.text(e.message);
+          $trace.text(e.message);
+          if (e.subtype === "create") {
+            if ($trace.hasClass("update")) {
+              return $trace.removeClass("update");
+            }
+          } else if (e.subtype === "update") {
+            if (!$trace.hasClass("update")) {
+              return $trace.addClass("update");
+            }
+          }
       }
     });
     $key_select = $('#key_select');

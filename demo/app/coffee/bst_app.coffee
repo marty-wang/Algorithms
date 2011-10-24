@@ -228,6 +228,7 @@ do (App) ->
             iterator = trace.iterator()
             traceStr = ""
             previousItem = null
+            status = ""
             while iterator.hasNext()
                 item = iterator.next()
 
@@ -239,12 +240,12 @@ do (App) ->
                     when -1 then branch = "left"
                     when 1 then branch = "right"
                 
-                status = ""
+                # status = ""
                 # if this is the last one
                 unless iterator.hasNext()
                     
                     unless item.oldValue? # added new leaf
-                        status = "create "
+                        status = "create"
                         level = trace.size()
                         leaf.level = level - 1
                         @_levels = level if level > @_levels
@@ -252,11 +253,12 @@ do (App) ->
                             leaf.show true
                         _triggerLog.call this, {
                             type: "log"
-                            message: "created new leaf, key: #{leaf.getKey()}, value: #{leaf.getPayload()}"
+                            subtype: status
+                            message: "create new leaf, key: #{leaf.getKey()}, value: #{leaf.getPayload()}"
                         }
                     
                     else # updated existing leaf
-                        status = "update "
+                        status = "update"
                         oldLeaf = item.oldValue
                         oldPayload = oldLeaf.getPayload()
                         oldPos = oldLeaf.getCenter()
@@ -270,7 +272,8 @@ do (App) ->
                         newLeaf.show true
                         _triggerLog.call this, {
                             type: "log"
-                            message: "updated leaf, key: #{newLeaf.getKey()}, new value: #{newLeaf.getPayload()}, old value: #{oldPayload}"
+                            subtype: status
+                            message: "update leaf, key: #{newLeaf.getKey()}, new value: #{newLeaf.getPayload()}, old value: #{oldPayload}"
                         }
                 else
                     curLeaf = item.value
@@ -278,10 +281,11 @@ do (App) ->
 
                 previousItem = item
 
-                traceStr += status + "leaf: '#{item.key}' #{branch}"
+                traceStr += status + " leaf: '#{item.key}' #{branch}"
 
             _triggerLog.call this, {
                 type: "trace"
+                subtype: status
                 message: traceStr
             }
 
@@ -377,13 +381,22 @@ do (App) ->
 ###############################################################################
 
 $ ->
-    console.log "BST Demo"
-
+    
     bstDemo = new App.BSTDemo "bst-demo"
     bstDemo.log (e)->
         switch e.type
-            when "log" then $log.text e.message
-            when "trace" then $trace.text e.message
+            when "log"
+                $log.text e.message
+                if e.subtype is "create"
+                    $log.removeClass "update" if $log.hasClass "update"
+                else if e.subtype is "update"
+                    $log.addClass "update" unless $log.hasClass "update"
+            when "trace" 
+                $trace.text e.message
+                if e.subtype is "create"
+                    $trace.removeClass "update" if $trace.hasClass "update"
+                else if e.subtype is "update"
+                    $trace.addClass "update" unless $trace.hasClass "update"
 
     $key_select = $('#key_select')
     $value_input = $('#value_input')
