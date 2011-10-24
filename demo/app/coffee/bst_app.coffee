@@ -24,6 +24,7 @@ do (App) ->
 
             @_branchEnd = [@_x, @_y]
             @_payload = null
+            @_highlightBranchTimer = null
 
             # property
             @level = 0
@@ -67,6 +68,25 @@ do (App) ->
                 @_set.attr props
                 @_branch.attr props
                 @_centerLine.attr props
+
+            this.highlightBranch(false)
+            
+        highlightBranch: (stopOldAnim = true)->
+            clearTimeout @_highlightBranchTimer
+            @_branch.stop() if stopOldAnim
+
+            highlightColor = "blue"
+            @_branch.attr {
+                stroke: highlightColor
+            }
+
+            highlightAnim = Raphael.animation {
+                stroke: "white"
+            }, 1000, "<>"
+
+            @_highlightBranchTimer = setTimeout (=>
+                @_branch.animate highlightAnim
+            ), 1000
         
         move: (x, y, animate = false, fn) ->
             self = this
@@ -252,6 +272,9 @@ do (App) ->
                             type: "log"
                             message: "updated leaf, key: #{newLeaf.getKey()}, new value: #{newLeaf.getPayload()}, old value: #{oldPayload}"
                         }
+                else
+                    curLeaf = item.value
+                    curLeaf.highlightBranch()
 
                 previousItem = item
 
@@ -271,6 +294,11 @@ do (App) ->
             @_logHandlers.push fn
     
     # Private
+
+    _createTraceLine = (trace)->
+        iterator = trace.iterator()
+        while iterator.hasNext()
+            curLeaf = iterator.next().value
 
     _updateTree = (fn)->
         hOffsets = _calcHOffsetToFatherLeaf.call this, @_levels

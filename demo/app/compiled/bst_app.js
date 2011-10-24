@@ -28,6 +28,7 @@
         this._set.push(this._leaf, this._label);
         this._branchEnd = [this._x, this._y];
         this._payload = null;
+        this._highlightBranchTimer = null;
         this.level = 0;
         this._animDuration = 250;
         _render.call(this);
@@ -65,12 +66,33 @@
         if (animate) {
           this._set.animate(props, animDuration, "<>");
           this._branch.animate(props, animDuration, "<>");
-          return this._centerLine.animate(centerLinePath, animDuration, "<>");
+          this._centerLine.animate(centerLinePath, animDuration, "<>");
         } else {
           this._set.attr(props);
           this._branch.attr(props);
-          return this._centerLine.attr(props);
+          this._centerLine.attr(props);
         }
+        return this.highlightBranch(false);
+      };
+      Leaf.prototype.highlightBranch = function(stopOldAnim) {
+        var highlightAnim, highlightColor;
+        if (stopOldAnim == null) {
+          stopOldAnim = true;
+        }
+        clearTimeout(this._highlightBranchTimer);
+        if (stopOldAnim) {
+          this._branch.stop();
+        }
+        highlightColor = "blue";
+        this._branch.attr({
+          stroke: highlightColor
+        });
+        highlightAnim = Raphael.animation({
+          stroke: "white"
+        }, 1000, "<>");
+        return this._highlightBranchTimer = setTimeout((__bind(function() {
+          return this._branch.animate(highlightAnim);
+        }, this)), 1000);
       };
       Leaf.prototype.move = function(x, y, animate, fn) {
         var animDuraiton, branchPath, centerLinePath, cx1, cy1, props, self;
@@ -189,7 +211,7 @@
     })();
   })(App);
   (function(App) {
-    var BSTDemo, _calcHOffsetToFatherLeaf, _triggerLog, _updateTree;
+    var BSTDemo, _calcHOffsetToFatherLeaf, _createTraceLine, _triggerLog, _updateTree;
     BSTDemo = (function() {
       function BSTDemo(container, width, height) {
         if (width == null) {
@@ -211,7 +233,7 @@
         this._logHandlers = [];
       }
       BSTDemo.prototype.put = function(key, value) {
-        var branch, item, iterator, leaf, level, newLeaf, oldLeaf, oldLevel, oldPayload, oldPos, previousItem, status, trace, traceStr;
+        var branch, curLeaf, item, iterator, leaf, level, newLeaf, oldLeaf, oldLevel, oldPayload, oldPos, previousItem, status, trace, traceStr;
         leaf = this._paper.algLeaf(this._centerX, this._centerY, key, key, this._leafRadius);
         leaf.setPayload(value);
         trace = new Alg.Stack();
@@ -269,6 +291,9 @@
                 message: "updated leaf, key: " + (newLeaf.getKey()) + ", new value: " + (newLeaf.getPayload()) + ", old value: " + oldPayload
               });
             }
+          } else {
+            curLeaf = item.value;
+            curLeaf.highlightBranch();
           }
           previousItem = item;
           traceStr += status + ("leaf: '" + item.key + "' " + branch);
@@ -285,6 +310,15 @@
       };
       return BSTDemo;
     })();
+    _createTraceLine = function(trace) {
+      var curLeaf, iterator, _results;
+      iterator = trace.iterator();
+      _results = [];
+      while (iterator.hasNext()) {
+        _results.push(curLeaf = iterator.next().value);
+      }
+      return _results;
+    };
     _updateTree = function(fn) {
       var hOffsets, stack, v;
       hOffsets = _calcHOffsetToFatherLeaf.call(this, this._levels);
