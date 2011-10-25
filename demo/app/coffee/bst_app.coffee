@@ -25,12 +25,14 @@ do (App) ->
             @_branchEnd = [@_x, @_y]
             @_payload = null
             @_highlightBranchTimer = null
+            @_highlightTimer = null
 
             # property
             @level = 0
 
             # config
             @_animDuration = 250
+            @_branchHighlightColor = "blue"
 
             _render.call this
             _registerEventHandler.call this
@@ -70,12 +72,30 @@ do (App) ->
                 @_centerLine.attr props
 
             this.highlightBranch(false)
+        
+        highlight: (stopOldAnim = true)->
+            clearTimeout @_highlightTimer
+            @_leaf.stop() if stopOldAnim
+
+            highlightColor = @_branchHighlightColor
+            @_leaf.attr {
+                fill: highlightColor
+            }
+
+            highlightAnim = Raphael.animation {
+                fill: "black"
+            }, 1000, "<>"
+
+            @_highlightTimer = setTimeout (=>
+                @_leaf.animate highlightAnim
+            ), 1000
+
             
         highlightBranch: (stopOldAnim = true)->
             clearTimeout @_highlightBranchTimer
             @_branch.stop() if stopOldAnim
 
-            highlightColor = "blue"
+            highlightColor = @_branchHighlightColor
             @_branch.attr {
                 stroke: highlightColor
             }
@@ -160,7 +180,6 @@ do (App) ->
             @_leaf.attr {
                 stroke: "white"
                 fill: "black"
-                opacity: 0.4
             }
 
             @_label.attr {
@@ -290,6 +309,25 @@ do (App) ->
             }
 
         get: (key) ->
+            traceStr = "from"
+            value = @_data.get key, (item)->
+                        branch = "found"
+                        switch item.branch
+                            when -1 then branch = "left=>"
+                            when 1 then branch = "right=>"
+                        
+                        traceStr += " Leaf #{item.key} #{branch}"
+                        item.value.highlightBranch()
+            
+            traceStr += " dead end" unless value?
+            found = value?
+            _triggerLog.call this, {
+                type: "get"
+                message: traceStr
+                found: found
+                key: key
+            }
+            value
 
         clear: ->
             # clear all leafs from @_data
@@ -388,19 +426,37 @@ $ ->
             when "log"
                 $log.text e.message
                 if e.subtype is "create"
-                    $log.removeClass "update" if $log.hasClass "update"
+                    $log.removeClass "negative"
+                    $log.addClass "positive"
                 else if e.subtype is "update"
-                    $log.addClass "update" unless $log.hasClass "update"
+                    $log.removeClass "negative positive"
             when "trace" 
                 $trace.text e.message
                 if e.subtype is "create"
-                    $trace.removeClass "update" if $trace.hasClass "update"
+                    $trace.removeClass "negative"
+                    $trace.addClass "positive"
                 else if e.subtype is "update"
-                    $trace.addClass "update" unless $trace.hasClass "update"
+                    $trace.removeClass "negative positive"
+            when "get"
+                $trace.text e.message
+                found = e.found
+                logMessage = "found Leaf #{e.key}"
+                logMessage = "cannot " + logMessage unless found
+                $log.text logMessage
+                if found
+                    $trace.removeClass "negative positive"
+                    $log.removeClass "negative positive"
+                else
+                    $trace.removeClass "positive"
+                    $log.removeClass "positive"
+                    $trace.addClass "negative"
+                    $log.addClass "negative"
+                    
 
     $key_select = $('#key_select')
     $value_input = $('#value_input')
     $add_button = $('#add_button')
+    $get_button = $('#get_button')
 
     $log = $('#bst-demo .log')
     $trace = $('#bst-demo .trace')
@@ -412,6 +468,12 @@ $ ->
         $value_input.val("")
         value = "Leaf #{key}" if value is ""
         bstDemo.put key, value
+    
+    $get_button.click (e)->
+        e.preventDefault()
+        key = $key_select.val()
+        leaf = bstDemo.get key
+        leaf.highlight() if leaf?
     
     $(document).bind "keypress", (e)->
         if 48 <= e.keyCode <= 57

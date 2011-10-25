@@ -29,8 +29,10 @@
         this._branchEnd = [this._x, this._y];
         this._payload = null;
         this._highlightBranchTimer = null;
+        this._highlightTimer = null;
         this.level = 0;
         this._animDuration = 250;
+        this._branchHighlightColor = "blue";
         _render.call(this);
         _registerEventHandler.call(this);
       }
@@ -74,6 +76,26 @@
         }
         return this.highlightBranch(false);
       };
+      Leaf.prototype.highlight = function(stopOldAnim) {
+        var highlightAnim, highlightColor;
+        if (stopOldAnim == null) {
+          stopOldAnim = true;
+        }
+        clearTimeout(this._highlightTimer);
+        if (stopOldAnim) {
+          this._leaf.stop();
+        }
+        highlightColor = this._branchHighlightColor;
+        this._leaf.attr({
+          fill: highlightColor
+        });
+        highlightAnim = Raphael.animation({
+          fill: "black"
+        }, 1000, "<>");
+        return this._highlightTimer = setTimeout((__bind(function() {
+          return this._leaf.animate(highlightAnim);
+        }, this)), 1000);
+      };
       Leaf.prototype.highlightBranch = function(stopOldAnim) {
         var highlightAnim, highlightColor;
         if (stopOldAnim == null) {
@@ -83,7 +105,7 @@
         if (stopOldAnim) {
           this._branch.stop();
         }
-        highlightColor = "blue";
+        highlightColor = this._branchHighlightColor;
         this._branch.attr({
           stroke: highlightColor
         });
@@ -174,8 +196,7 @@
       _render = function() {
         this._leaf.attr({
           stroke: "white",
-          fill: "black",
-          opacity: 0.4
+          fill: "black"
         });
         this._label.attr({
           fill: "white",
@@ -306,7 +327,34 @@
           message: traceStr
         });
       };
-      BSTDemo.prototype.get = function(key) {};
+      BSTDemo.prototype.get = function(key) {
+        var found, traceStr, value;
+        traceStr = "from";
+        value = this._data.get(key, function(item) {
+          var branch;
+          branch = "found";
+          switch (item.branch) {
+            case -1:
+              branch = "left=>";
+              break;
+            case 1:
+              branch = "right=>";
+          }
+          traceStr += " Leaf " + item.key + " " + branch;
+          return item.value.highlightBranch();
+        });
+        if (value == null) {
+          traceStr += " dead end";
+        }
+        found = value != null;
+        _triggerLog.call(this, {
+          type: "get",
+          message: traceStr,
+          found: found,
+          key: key
+        });
+        return value;
+      };
       BSTDemo.prototype.clear = function() {};
       BSTDemo.prototype.log = function(fn) {
         return this._logHandlers.push(fn);
@@ -401,38 +449,52 @@
     return App.BSTDemo = BSTDemo;
   })(App);
   $(function() {
-    var $add_button, $key_select, $log, $trace, $value_input, bstDemo;
+    var $add_button, $get_button, $key_select, $log, $trace, $value_input, bstDemo;
     bstDemo = new App.BSTDemo("bst-demo");
     bstDemo.log(function(e) {
+      var found, logMessage;
       switch (e.type) {
         case "log":
           $log.text(e.message);
           if (e.subtype === "create") {
-            if ($log.hasClass("update")) {
-              return $log.removeClass("update");
-            }
+            $log.removeClass("negative");
+            return $log.addClass("positive");
           } else if (e.subtype === "update") {
-            if (!$log.hasClass("update")) {
-              return $log.addClass("update");
-            }
+            return $log.removeClass("negative positive");
           }
           break;
         case "trace":
           $trace.text(e.message);
           if (e.subtype === "create") {
-            if ($trace.hasClass("update")) {
-              return $trace.removeClass("update");
-            }
+            $trace.removeClass("negative");
+            return $trace.addClass("positive");
           } else if (e.subtype === "update") {
-            if (!$trace.hasClass("update")) {
-              return $trace.addClass("update");
-            }
+            return $trace.removeClass("negative positive");
+          }
+          break;
+        case "get":
+          $trace.text(e.message);
+          found = e.found;
+          logMessage = "found Leaf " + e.key;
+          if (!found) {
+            logMessage = "cannot " + logMessage;
+          }
+          $log.text(logMessage);
+          if (found) {
+            $trace.removeClass("negative positive");
+            return $log.removeClass("negative positive");
+          } else {
+            $trace.removeClass("positive");
+            $log.removeClass("positive");
+            $trace.addClass("negative");
+            return $log.addClass("negative");
           }
       }
     });
     $key_select = $('#key_select');
     $value_input = $('#value_input');
     $add_button = $('#add_button');
+    $get_button = $('#get_button');
     $log = $('#bst-demo .log');
     $trace = $('#bst-demo .trace');
     $add_button.click(function(e) {
@@ -445,6 +507,15 @@
         value = "Leaf " + key;
       }
       return bstDemo.put(key, value);
+    });
+    $get_button.click(function(e) {
+      var key, leaf;
+      e.preventDefault();
+      key = $key_select.val();
+      leaf = bstDemo.get(key);
+      if (leaf != null) {
+        return leaf.highlight();
+      }
     });
     return $(document).bind("keypress", function(e) {
       var key, value, _ref;

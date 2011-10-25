@@ -22,9 +22,9 @@ class BST
         @_root = _put.call this, @_root, key, value, fn
 
     # return value, or return null if nothing found    
-    get: (key) ->
+    get: (key, fn) ->
         return null unless key?
-        _get @_root, key
+        _get @_root, key, fn
 
     # return the size of the bst
     size: ->
@@ -41,15 +41,28 @@ class BST
 
     # private
 
-    _get = (node, key) ->
+    _get = (node, key, fn) ->
         return null unless node?
 
+        branch = 0
         if node.key > key
-            return _get node.left, key
+            branch = -1
+            _getCallback.call this, node, branch, fn
+            return _get node.left, key, fn
         else if node.key < key
-            return _get node.right, key
+            branch = 1
+            _getCallback.call this, node, branch, fn
+            return _get node.right, key, fn
         else
+            _getCallback.call this, node, branch, fn
             return node.value
+    
+    _getCallback = (node, branch, fn)->
+        fn.call this, {
+            branch: branch
+            key: node.key
+            value: node.value
+        } if fn?
     
     _put = (node, key, value, fn) ->
         branch = 0
