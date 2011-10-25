@@ -337,11 +337,6 @@ do (App) ->
     
     # Private
 
-    _createTraceLine = (trace)->
-        iterator = trace.iterator()
-        while iterator.hasNext()
-            curLeaf = iterator.next().value
-
     _updateTree = (fn)->
         hOffsets = _calcHOffsetToFatherLeaf.call this, @_levels
         v = @_verticalLevelDistance
