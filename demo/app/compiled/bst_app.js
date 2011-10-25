@@ -232,7 +232,7 @@
     })();
   })(App);
   (function(App) {
-    var BSTDemo, _calcHOffsetToFatherLeaf, _createTraceLine, _triggerLog, _updateTree;
+    var BSTDemo, _calcHOffsetToFatherLeaf, _triggerLog, _updateTree;
     BSTDemo = (function() {
       function BSTDemo(container, width, height) {
         if (width == null) {
@@ -361,15 +361,6 @@
       };
       return BSTDemo;
     })();
-    _createTraceLine = function(trace) {
-      var curLeaf, iterator, _results;
-      iterator = trace.iterator();
-      _results = [];
-      while (iterator.hasNext()) {
-        _results.push(curLeaf = iterator.next().value);
-      }
-      return _results;
-    };
     _updateTree = function(fn) {
       var hOffsets, stack, v;
       hOffsets = _calcHOffsetToFatherLeaf.call(this, this._levels);
