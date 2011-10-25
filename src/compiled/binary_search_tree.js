@@ -12,7 +12,7 @@
     return Node;
   })();
   BST = (function() {
-    var _get, _inOrderIterate, _postOrderIterate, _preOrderIterate, _put, _size;
+    var _get, _getCallback, _inOrderIterate, _postOrderIterate, _preOrderIterate, _put, _size;
     function BST() {
       this._root = null;
     }
@@ -22,11 +22,11 @@
       }
       return this._root = _put.call(this, this._root, key, value, fn);
     };
-    BST.prototype.get = function(key) {
+    BST.prototype.get = function(key, fn) {
       if (key == null) {
         return null;
       }
-      return _get(this._root, key);
+      return _get(this._root, key, fn);
     };
     BST.prototype.size = function() {
       return _size(this._root);
@@ -41,16 +41,32 @@
           return _inOrderIterate.call(this, this._root, fn);
       }
     };
-    _get = function(node, key) {
+    _get = function(node, key, fn) {
+      var branch;
       if (node == null) {
         return null;
       }
+      branch = 0;
       if (node.key > key) {
-        return _get(node.left, key);
+        branch = -1;
+        _getCallback.call(this, node, branch, fn);
+        return _get(node.left, key, fn);
       } else if (node.key < key) {
-        return _get(node.right, key);
+        branch = 1;
+        _getCallback.call(this, node, branch, fn);
+        return _get(node.right, key, fn);
       } else {
+        _getCallback.call(this, node, branch, fn);
         return node.value;
+      }
+    };
+    _getCallback = function(node, branch, fn) {
+      if (fn != null) {
+        return fn.call(this, {
+          branch: branch,
+          key: node.key,
+          value: node.value
+        });
       }
     };
     _put = function(node, key, value, fn) {

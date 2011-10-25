@@ -90,13 +90,16 @@
   top: 0;
   font-size: 20px;
   font-weight: bold;
-  color: red;
+  color: yellow;
   background: black;
   padding: 4px;
   margin: 10px;
 }
-#bst .log.update, #bst .trace.update {
-  color: yellow;
+#bst .log.positive, #bst .trace.positive {
+  color: green;
+}
+#bst .log.negative, #bst .trace.negative {
+  color: red;
 }
 #bst .trace {
   font-size: 16px;
